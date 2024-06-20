@@ -20,7 +20,7 @@
 .headercontents h2{
     font-weight: 500;
     color : white;
-    text-shadow: 5px 5px black;
+    text-shadow: 2px 2px 4px #000000;
     font-size:max(4.5vw,22px);
 
 }
