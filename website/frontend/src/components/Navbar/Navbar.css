@@ -16,7 +16,7 @@
     list-style: none;
     gap: 20px;
     color: #49557E;
-    font-size: 18px;
+    font-size: 18px; 
 }
 
 .navbar-right {
@@ -70,7 +70,35 @@ position: relative;
     display: none;
     right: 0;
     z-index: 1;
+
 }
+.navbar-profile:hover .navbar-profile-dropdown{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: #fff2ef;
+    padding: 12px 25px;
+    border-radius: 4px;
+    border: 1px solid tomato;
+    outline: 2px solid white;
+    list-style: none;
+}
+
+.navbar-profile-dropdown li{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.navbar-profile-dropdown img{
+    width: 20px;
+}
+
+.navbar-profile-dropdown li:hover{
+    color: #FF4C24;
+}
+
 @media (max-width:1050px) {
     .navbar .logo {
         width: 140px;
