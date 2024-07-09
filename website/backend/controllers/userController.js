@@ -70,6 +70,24 @@ const registerUser = async (req,res) => {
         res.json({success:false,message:"Error"})
     }
 
-
 }
-export {loginUser, registerUser}
+
+const getName = async (req,res) => {
+
+    try {
+        const userId = req.body.userId;
+        const userData = await userModel.findById(userId);
+
+        if (!userData) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const userName = userData.name;
+        res.json({ success: true, userName });
+    } catch (error) {
+        console.log(error);
+        res.json({success:false,message:"Error"})
+    }
+}
+
+export {loginUser, registerUser, getName }

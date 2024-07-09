@@ -1,11 +1,34 @@
 
 
-.navbar {
+/* .navbar {
+    position: fixed;
     padding: 20px 0px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+} */
+body{
+    margin-top: 80px;
+ }
+
+.navbar {
+    position: fixed; 
+    top: 0; 
+    left: 0;
+    width: 100%; 
+    z-index: 1000; 
+    background-color: white; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+    padding: 10px 20px;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+  }
+  
+.headercontents {
+    margin-top: 80px; 
 }
+  
 
 .navbar .logo {
     width: 150px;
@@ -62,7 +85,11 @@ position: relative;
     top: -8px;
     right: -8px;
 }
-.navbar-profile{
+
+.navbar-profile {
+    display: flex; 
+    align-items: center; /* Center align items vertically */
+    gap: 10px; /* Added gap between profile icon and username */
     position: relative;
 }
 .navbar-profile-dropdown{
@@ -98,6 +125,31 @@ position: relative;
 .navbar-profile-dropdown li:hover{
     color: #FF4C24;
 }
+
+.name-of-person{
+    color: #49557E;
+    text-align: center;
+    font-size: 14px; /* Increased font size for better visibility */
+    margin-top: 5px; /* Added margin to avoid overlap */
+}
+
+.imgp {
+    width: 24px; /* Added to adjust the size of the profile icon */
+    height: 24px;
+    object-fit: contain; /* Ensures the profile icon is not distorted */
+}
+
+/* .name-of-person {
+    color: #49557E;
+    text-align: center;
+    font-size: 14px; 
+    margin-top: 5px; 
+}
+  
+.imgp {
+    text-align: center;
+    padding: 0 10px; 
+} */
 
 @media (max-width:1050px) {
     .navbar .logo {

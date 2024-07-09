@@ -1,23 +1,54 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState ,useEffect } from "react";
 import "./Navbar.css";
 import { Link, useNavigate } from "react-router-dom";
 import { assets } from "../../assets/assets";
 import { storecontext } from "../../context/storecontext";
+import axios from 'axios'
 
 const Navbar = ({ setShowLogin }) => {
   const [menu, setMenu] = useState("home");
 
-  const { getTotalCartAmount,token,setToken} = useContext(storecontext);
+  const { getTotalCartAmount,token,setToken ,url,setCartItems} = useContext(storecontext);
 
   const navigate = useNavigate();
+
+  const scroll = () =>{
+    const homeid = document.getElementById('home');
+    if (homeid){
+      homeid.scrollIntoView({behavior:"smooth",block: 'start', inline: 'nearest'})
+    }
+  }
+
+  const scrollTo = () =>{
+      navigate('/#explore-menu');  
+  }
 
   const logout = () =>{
     localStorage.removeItem("token");
     setToken("");
-    navigate("/")
-
-
+    navigate("/");
+    setCartItems({});
   }
+
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        
+        let response = await axios.get(url+"/api/user/name",{headers:{token}});
+        console.log(response.data.userName);
+        setUserName(response.data.userName); 
+      } catch (error) {
+        console.error('Error fetching user name:', error);
+      }
+    };
+
+    if (token) {
+      fetchUserName();
+    }
+
+  }, [token]);
 
   return (
     <div className="navbar">
@@ -27,14 +58,15 @@ const Navbar = ({ setShowLogin }) => {
       <ul className="navbar-menu">
         <Link
           to="/"
-          onClick={() => setMenu("Home")}
+          onClick={() => {setMenu("Home");scroll();}}
+          
           className={menu === "Home" ? "active" : ""}
         >
           Home
         </Link>
         <a
           href="#explore-menu"
-          onClick={() => setMenu("Menu")}
+          onClick={() => {setMenu("Menu"),scrollTo()}}
           className={menu === "Menu" ? "active" : ""}
         >
           Menu
@@ -62,16 +94,37 @@ const Navbar = ({ setShowLogin }) => {
           </Link>
           <div className={getTotalCartAmount() === 0 ? "" : "dot"}></div>
         </div>
-        {!token?<button onClick={() => setShowLogin(true)}>sign in</button>
+        {!token?<button onClick={() =>{ setShowLogin(true);scroll();setCartItems({});}}>sign in</button>
           : <div className='navbar-profile'>
-            <img src={assets.profile_icon} alt="" />
+          <div className="profile-content">
+            <img className="imgp" src={assets.profile_icon} alt="Profile Icon" />
             <ul className='navbar-profile-dropdown'>
-              <li onClick={()=>navigate('/myorders')}><img src={assets.bag_icon} alt="" /> <p>Orders</p></li>
+              <li onClick={() => navigate('/profile')}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16" style={{ color: 'orange' }}>
+                  <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+                </svg>
+                <p>Profile</p>
+              </li>
               <hr />
-              <li onClick={logout}><img src={assets.logout_icon} alt="" /> <p>Logout</p></li> 
+              <li onClick={() => navigate('/myorders')}>
+                <img src={assets.bag_icon} alt="Orders Icon" /> 
+                <p>Orders</p>
+              </li>
+              <hr />
+              <li onClick={logout}>
+                <img src={assets.logout_icon} alt="Logout Icon" /> 
+                <p>Logout</p>
+              </li>
             </ul>
           </div>
+          <div className="profile-username">
+            <p className="name-of-person">{userName}</p>
+          </div>
+        </div>
+        
+          
         }
+        
 
       </div>
     </div>

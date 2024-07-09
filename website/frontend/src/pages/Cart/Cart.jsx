@@ -1,12 +1,25 @@
-import React, { useContext } from 'react'
+import React, { useContext,useEffect } from 'react'
 import './Cart.css'
 import { storecontext } from '../../context/storecontext';
 import { useNavigate } from 'react-router-dom';
 
 
 const Cart = () => {
-  const { cartItems, food_list, removeFromCart, getTotalCartAmount,url} = useContext(storecontext);
-  
+  const { cartItems, food_list, removeFromCart, getTotalCartAmount,url,token } = useContext(storecontext);
+
+  const islogedIn = () => {
+    {!token?alert("Please Login to continue!!")
+      : 
+      navigate("/order")
+      if (getTotalCartAmount()===0){
+        alert("Add items to proceed!!")
+      }
+      
+    }
+  }
+  useEffect(() => {
+    window.scrollTo(0, 0); 
+  }, []);
   const navigate = useNavigate();
   return (
     <div className='cart'>
@@ -59,7 +72,7 @@ const Cart = () => {
               <b>₹{getTotalCartAmount()===0?0:getTotalCartAmount()+2}</b>
             </div>
           </div>
-          <button onClick={()=>navigate('/order')}>PROCEED TO CHECKOUT</button>
+          <button onClick={islogedIn}>PROCEED TO CHECKOUT</button>
         </div>
         <div className="cart-promocode">
           <div>
