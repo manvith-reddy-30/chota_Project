@@ -19,7 +19,7 @@ const loginUser = async (req,res) => {
         if(!isMatch){
             return res.json({success:false,message: "Invalid credentials"})
         }
-
+        console.log("Checking");
         const token = createToken(user._id)
         res.json({success:true,token})
     } catch (error) {
@@ -32,6 +32,7 @@ const loginUser = async (req,res) => {
 
 //create token
 const createToken = (id) => {
+    const expiresIn = 45 * 60;
     return jwt.sign({id}, process.env.JWT_SECRET);
 }
 

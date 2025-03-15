@@ -22,7 +22,13 @@ const StoreContextProvider = (props) => {
         }
 
         if (token){
-            await axios.post(url+"/api/cart/add",{itemId},{headers:{token}});
+            try {
+                await axios.post(url+"/api/cart/add",{itemId},{headers:{token}});
+            } catch (error) {
+                console.log(error);
+                alert("Token Expired!Login Again");
+            }
+            
         }
     }
 

@@ -24,7 +24,7 @@ const LoginPopup = ({setShowLogin}) =>  {
 
 
     const onLogin = async (event) => {
-        event.preventDefault()
+        // event.preventDefault()
         let new_url = url;
         if (currState === "Login") {
             new_url += "/api/user/login";
@@ -38,7 +38,6 @@ const LoginPopup = ({setShowLogin}) =>  {
             setToken(response.data.token);
             localStorage.setItem("token", response.data.token)
             setShowLogin(false)
-
 
         }else{
             alert(response.data.message)
