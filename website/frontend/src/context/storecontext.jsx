@@ -3,7 +3,7 @@ import axios from 'axios';
 import { createContext , useState, useEffect } from "react";
 
 
-export const storecontext = createContext(null)
+export const StoreContext = createContext(null)
 
 const StoreContextProvider = (props) => {
 
@@ -85,9 +85,9 @@ const StoreContextProvider = (props) => {
 
         }
         return (
-            <storecontext.Provider value={contextValue}>
+            <StoreContext.Provider value={contextValue}>
                 {props.children}
-            </storecontext.Provider>
+            </StoreContext.Provider>
         )
     }
     export default StoreContextProvider

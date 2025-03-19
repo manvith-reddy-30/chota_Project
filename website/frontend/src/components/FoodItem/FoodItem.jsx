@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
 import './FoodItem.css';
 import { assets } from '../../assets/assets';
-import { storecontext } from '../../context/storecontext';
+import { StoreContext } from '../../context/StoreContext';
 
 const FoodItem = ({ id, name, price, description, image }) => {
-  const { cartItems, addToCart, removeFromCart, url } = useContext(storecontext);
+  const { cartItems, addToCart, removeFromCart, url } = useContext(StoreContext);
  
   const itemCount = cartItems && cartItems[id] ? cartItems[id] : 0;
   return (

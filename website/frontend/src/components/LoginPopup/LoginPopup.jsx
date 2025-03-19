@@ -1,14 +1,15 @@
-import React, { useContext, useState} from "react";
+import { useContext, useState } from "react";
+import PropTypes from 'prop-types';
+
 import './LoginPopup.css'
 import {assets} from '../../assets/assets'
-import { storecontext } from "../../context/storecontext";
+import { StoreContext } from "../../context/StoreContext";
 import axios from "axios"
 
-const LoginPopup = ({setShowLogin}) =>  {
-    const { setToken, url } = useContext(storecontext)
+const LoginPopup = ({ setShowLogin }) => {
 
+    const { setToken, url } = useContext(StoreContext)
 
-    
     const [currState, setCurrState] = useState("Login")
     const [data, setData] = useState({
         name: "",
@@ -24,7 +25,7 @@ const LoginPopup = ({setShowLogin}) =>  {
 
 
     const onLogin = async (event) => {
-        // event.preventDefault()
+        event.preventDefault()
         let new_url = url;
         if (currState === "Login") {
             new_url += "/api/user/login";
@@ -32,7 +33,15 @@ const LoginPopup = ({setShowLogin}) =>  {
         else {
             new_url += "/api/user/register"
         }
-        const response = await axios.post(new_url, data);
+        let response;
+        try {
+            response = await axios.post(new_url, data);
+        } catch (error) {
+            console.error("Error during login request:", error);
+            alert("An error occurred while trying to log in. Please try again.");
+            return;
+        }
+
 
         if (response.data.success){
             setToken(response.data.token);
@@ -40,9 +49,11 @@ const LoginPopup = ({setShowLogin}) =>  {
             setShowLogin(false)
 
         }else{
-            alert(response.data.message)
+            alert(response.data.message);
+            console.log("Login failed:", response.data.message);
+
         }
-}
+    }
 
     return (
         <div className='login-popup'>
@@ -56,7 +67,6 @@ const LoginPopup = ({setShowLogin}) =>  {
                     <input name='email' onChange={onChangeHandler} value={data.email} type="email" placeholder='Your email' />
                     <input name='password' onChange={onChangeHandler} value={data.password} type="password" placeholder='Password' required />
 
-                   
                 </div>
                 <button type='submit'>{currState === "Sign Up" ? "Create account" : "Login"}</button>
                 <div className="login-popup-condition">
@@ -72,5 +82,8 @@ const LoginPopup = ({setShowLogin}) =>  {
     )
 }
 
-export default LoginPopup
+export default LoginPopup;
 
+LoginPopup.propTypes = {
+    setShowLogin: PropTypes.func.isRequired,
+};

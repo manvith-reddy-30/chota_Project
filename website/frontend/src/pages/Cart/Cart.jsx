@@ -1,11 +1,11 @@
 import React, { useContext,useEffect } from 'react'
 import './Cart.css'
-import { storecontext } from '../../context/storecontext';
+import { StoreContext } from '../../context/StoreContext';
 import { useNavigate } from 'react-router-dom';
 
 
 const Cart = () => {
-  const { cartItems, food_list, removeFromCart, getTotalCartAmount,url,token } = useContext(storecontext);
+  const { cartItems, food_list, removeFromCart, getTotalCartAmount,url,token } = useContext(StoreContext);
 
   const islogedIn = () => {
     {!token?alert("Please Login to continue!!")

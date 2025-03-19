@@ -2,13 +2,13 @@ import React, { useContext, useState ,useEffect } from "react";
 import "./Navbar.css";
 import { Link, useNavigate } from "react-router-dom";
 import { assets } from "../../assets/assets";
-import { storecontext } from "../../context/storecontext";
+import { StoreContext } from "../../context/StoreContext";
 import axios from 'axios'
 
 const Navbar = ({ setShowLogin }) => {
   const [menu, setMenu] = useState("home");
 
-  const { getTotalCartAmount,token,setToken ,url,setCartItems} = useContext(storecontext);
+  const { getTotalCartAmount,token,setToken ,url,setCartItems} = useContext(StoreContext);
 
   const navigate = useNavigate();
 
@@ -100,7 +100,7 @@ const Navbar = ({ setShowLogin }) => {
             <img className="imgp" src={assets.profile_icon} alt="Profile Icon" />
             <ul className='navbar-profile-dropdown'>
               <li onClick={() => navigate('/profile')}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16" style={{ color: 'orange' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-person-fill" viewBox="0 0 16 16" style={{ color: 'orange' }}>
                   <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
                 </svg>
                 <p>Profile</p>

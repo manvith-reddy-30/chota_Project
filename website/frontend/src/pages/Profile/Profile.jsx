@@ -1,5 +1,5 @@
 import React from 'react'
-import { storecontext } from '../../context/storecontext'
+import { StoreContext } from '../../context/StoreContext'
 import { useContext } from 'react'
 
 const Profile = () => {
