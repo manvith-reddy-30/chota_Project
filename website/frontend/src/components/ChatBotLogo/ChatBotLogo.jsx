@@ -12,7 +12,7 @@ const ChatbotLogo = () => {
 
   return (
     <div className="chatbot-logo" onClick={handleClick}>
-      <img src="/path/to/logo.png" alt="Chatbot Logo" />
+      <img src="/new/path/to/logo.png" alt="Chatbot Logo" /> // Update this path
     </div>
   );
 };
