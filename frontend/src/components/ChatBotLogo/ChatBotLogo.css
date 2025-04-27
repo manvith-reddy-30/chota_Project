@@ -1,20 +1,33 @@
-/* ChatbotLogo.css */
 .chatbot-logo {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: #007bff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .chatbot-logo img {
-    width: 40px;
-    height: 40px;
-  }
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 70px;
+  height: 70px;
+  background-color: #ffffff; /* White background */
+  border: 2px solid #007bff; /* Blue border */
+  border-radius: 50%; /* Makes it a perfect circle */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow */
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.chatbot-logo:hover {
+  background-color: #007bff;
+  transform: scale(1.05);
+}
+
+.chatbot-logo img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  transition: all 0.3s ease;
+}
+
+.chatbot-logo:hover img {
+  filter: brightness(0) invert(1); /* Invert logo color on hover for a nice effect */
+}

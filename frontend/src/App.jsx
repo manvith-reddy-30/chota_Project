@@ -8,8 +8,8 @@ import Footer from './components/Footer/Footer'
 import LoginPopup from './components/LoginPopup/LoginPopup'
 import MyOrders from './pages/MyOrders/MyOrders'
 import Verify from './pages/Verify/verify'
-import Chatbot from './ChatBot/ChatBot.jsx'
-import ChatbotLogo from './pages/ChatBot/ChatBot.jsx'
+import Chatbot from './pages/ChatBot/ChatBot.jsx'
+import ChatbotLogo from './components/ChatBotLogo/ChatBotLogo.jsx'
 
 const App = () => {
   const [showLogin,setShowLogin] = useState(false)
@@ -27,9 +27,11 @@ const App = () => {
           <Route path='/myorders' element={<MyOrders/>}/>
           <Route path='/chatbot' element={<Chatbot />}/>
         </Routes>
+        <ChatbotLogo />
       </div>
+       
+       
        <Footer/>
-       <ChatbotLogo />
     </>
 
   )

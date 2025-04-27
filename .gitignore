@@ -3,3 +3,4 @@ backend/.env
  npm run server
 
  npm run dev
+.DS_Store

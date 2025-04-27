@@ -2,6 +2,10 @@ import userModel from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import validator from "validator";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 //login user
 const loginUser = async (req,res) => {
@@ -83,4 +87,22 @@ const getName = async (req,res) => {
     }
 }
 
-export {loginUser, registerUser, getName }
+const getresponse = async (req,res) => {
+    try {
+        const {prompt} = req.body;
+
+
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const result = await model.generateContent(prompt);
+        const response = result.response;
+        const text = response.text();
+
+        res.json({ response: text });
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ error: "Something went wrong!" });
+    }
+}
+
+export {loginUser, registerUser, getName ,getresponse}
