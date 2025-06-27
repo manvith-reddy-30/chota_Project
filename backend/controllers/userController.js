@@ -22,7 +22,7 @@ const loginUser = async (req,res) => {
 
         if(!isMatch){
             console.log("Invalid credentials");
-            return res.json({success:false,message: "Invalid credentials"})
+            return res.status(404).json({msg: "Invalid credentials"})
         }
         const token = createToken(user._id)
         res.json({success:true,token})
@@ -87,22 +87,28 @@ const getName = async (req,res) => {
     }
 }
 
-const getresponse = async (req,res) => {
+const getresponse = async (req, res) => {
     try {
-        const {prompt} = req.body;
-
+        const { prompt } = req.body;
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
         const result = await model.generateContent(prompt);
         const response = result.response;
-        const text = response.text();
+        let text = response.text();
 
+        text = text
+            .trim() // Remove leading and trailing whitespace
+            .replace(/\*\*([^*]+)\*\*/g, '\n\n$1\n\n') // Add line breaks around bold headings
+            .replace(/\*\s/g, '\n- ') // Convert bullet points into list format
+            .replace(/\n{3,}/g, '\n\n') // Ensure no excessive line breaks
+            .replace(/\s+/g, ' ') // Replace multiple spaces with a single space
+            .replace(/(^\w|\.\s*\w)/g, match => match.toUpperCase()); // Capitalize the first letter of sentences
         res.json({ response: text });
     } catch (error) {
         console.error("Error:", error);
         res.status(500).json({ error: "Something went wrong!" });
     }
-}
+};
 
 export {loginUser, registerUser, getName ,getresponse}

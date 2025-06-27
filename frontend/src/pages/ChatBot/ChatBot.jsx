@@ -9,7 +9,7 @@ const Chatbot = () => {
   const { url } = useContext(StoreContext);
 
   const sendMessage = async () => {
-    if (!input) return; // Prevent sending empty messages
+    if (!input) return; 
 
     const newMessages = [...messages, { text: input, user: true }];
     setMessages(newMessages);
@@ -20,7 +20,7 @@ const Chatbot = () => {
       const response = await fetch(`${url}/api/user/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: input }),
+        body: JSON.stringify({ prompt: input }),f
       });
       const data = await response.json();
       
