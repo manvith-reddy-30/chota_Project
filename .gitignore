@@ -6,3 +6,5 @@ backend/.env
 .DS_Store
 backend/.DS_Store
 backend/node_modules
+admin/.env
+frontend/.env

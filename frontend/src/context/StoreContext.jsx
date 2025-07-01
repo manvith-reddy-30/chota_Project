@@ -7,8 +7,10 @@ export const StoreContext = createContext(null)
 
 const StoreContextProvider = (props) => {
 
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
     const [cartItems, setCartItems] = useState({});
-    const url = "http://localhost:4000"
+    const url = BACKEND_URL
     const [token, setToken] = useState("")
     const [food_list,setFoodList] = useState([])
 
