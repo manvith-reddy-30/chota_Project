@@ -8,3 +8,6 @@ backend/.DS_Store
 backend/node_modules
 admin/.env
 frontend/.env
+.DS_Store
+admin/.DS_Store
+admin/.DS_Store

@@ -25,35 +25,39 @@ const LoginPopup = ({ setShowLogin }) => {
 
 
     const onLogin = async (event) => {
-        event.preventDefault()
+        event.preventDefault();
+    
         let new_url = url;
         if (currState === "Login") {
             new_url += "/api/user/login";
+        } else {
+            new_url += "/api/user/register";
         }
-        else {
-            new_url += "/api/user/register"
-        }
-        let response;
+    
         try {
-            response = await axios.post(new_url, data);
+            const response = await axios.post(new_url, data);
+    
+            if (response.data.success) {
+                setToken(response.data.token);
+                localStorage.setItem("token", response.data.token);
+                setShowLogin(false);
+            } else {
+                // Handles user not found, invalid credentials, or other backend messages
+                alert(response.data.message);
+                console.log("Login failed:", response.data.message);
+            }
+    
         } catch (error) {
             console.error("Error during login request:", error);
-            alert("An error occurred while trying to log in. Please try again.");
-            return;
+    
+            if (error.response && error.response.data && error.response.data.message) {
+                alert(error.response.data.message);
+            } else {
+                alert("An unexpected error occurred. Please try again.");
+            }
         }
-
-
-        if (response.data.success){
-            setToken(response.data.token);
-            localStorage.setItem("token", response.data.token)
-            setShowLogin(false)
-
-        }else{
-            alert(response.data.message);
-            console.log("Login failed:", response.data.message);
-
-        }
-    }
+    };
+    
 
     return (
         <div className='login-popup'>

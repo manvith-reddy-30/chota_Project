@@ -8,29 +8,34 @@ import dotenv from "dotenv";
 dotenv.config();
 
 //login user
-const loginUser = async (req,res) => {
-    const {email, password} = req.body;
-    try{
-        const user = await userModel.findOne({email})
+const loginUser = async (req, res) => {
+    const { email, password } = req.body;
 
-        if(!user){
+    try {
+        const user = await userModel.findOne({ email });
+
+        if (!user) {
             console.log("User not found");
-            return res.json({success:false,message: "User does not exist"})
+            return res.status(404).json({ success: false, message: "User does not exist" });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password)
+        const isMatch = await bcrypt.compare(password, user.password);
 
-        if(!isMatch){
+        if (!isMatch) {
             console.log("Invalid credentials");
-            return res.status(404).json({msg: "Invalid credentials"})
+            return res.status(401).json({ success: false, message: "Invalid credentials" });
         }
-        const token = createToken(user._id)
-        res.json({success:true,token})
+
+        const token = createToken(user._id);
+
+        res.status(200).json({ success: true, token });
+
     } catch (error) {
-        console.log("Error during login:", error);
-        res.json({success:false,message:"Error"})
+        console.error("Error during login:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
     }
-}
+};
+
 
 //create token
 const createToken = (id) => {
