@@ -91,6 +91,32 @@ const getName = async (req,res) => {
         res.json({success:false,message:"Error"})
     }
 }
+const googleLogin = async (req, res) => {
+    const { name, email, password } = req.body;
+
+    try {
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Email is required" });
+        }
+
+        let user = await userModel.findOne({ email });
+
+        if (!user) {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
+
+            const newUser = new userModel({ name, email, password: hashedPassword });
+            user = await newUser.save();
+        }
+
+        const token = createToken(user._id);
+        res.json({ success: true, token });
+
+    } catch (error) {
+        console.error("Google login error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
 
 const getresponse = async (req, res) => {
     try {
@@ -116,4 +142,4 @@ const getresponse = async (req, res) => {
     }
 };
 
-export {loginUser, registerUser, getName ,getresponse}
+export {loginUser, registerUser, getName ,getresponse,googleLogin}

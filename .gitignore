@@ -1,6 +1,6 @@
 backend/.env
 
- npm run server
+npm run server
 
  npm run dev
 .DS_Store
@@ -8,6 +8,8 @@ backend/.DS_Store
 backend/node_modules
 admin/.env
 frontend/.env
+
+admin/.DS_Store
+admin/.DS_Store
 .DS_Store
-admin/.DS_Store
-admin/.DS_Store
+*/.DS_Store
