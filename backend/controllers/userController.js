@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-//login user
+
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
@@ -120,21 +120,54 @@ const googleLogin = async (req, res) => {
 
 const getresponse = async (req, res) => {
     try {
-        const { prompt } = req.body;
+        const { prompt, cartItems, foodList, token } = req.body;
+
+
+        const making_it = `
+                You are a helpful and professional restaurant assistant chatbot for a food ordering website.
+
+                ✅ **Instructions:**
+                - Answer **only food-related queries** (menu items, ingredients, nutrition, offers, timings).
+                - You can answer foods culture and local restuarants related queries.
+                - If the question is **not food-related**, respond with: "I am not able to answer this question."
+                - Structure your response clearly using **Markdown**:
+                - **Bold headings**
+                - Short paragraphs
+                - Bullet points for menus or lists
+                - Keep tone **friendly, concise, and easy to read**
+
+                ✅ **Context:**
+                - The user is chatting with a restaurant AI on our food website.
+                - Here’s their current cart:
+                ${Object.entries(cartItems || {}).map(([id, qty]) => {
+                const item = foodList.find(f => f._id === id);
+                return item ? `- ${item.name} x${qty}` : null;
+                }).filter(Boolean).join('\n')}
+
+                - Available Menu Items:
+                ${(foodList || []).map(item => `- ${item.name} (₹${item.price})`).join('\n')}
+
+                Now, respond to the user's prompt below:
+                `;
+
+
+        const fullPrompt = `${making_it}\n\nUser prompt: ${prompt}`;
+
+
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-        const result = await model.generateContent(prompt);
+        const result = await model.generateContent(fullPrompt);
         const response = result.response;
         let text = response.text();
 
-        text = text
-            .trim() // Remove leading and trailing whitespace
-            .replace(/\*\*([^*]+)\*\*/g, '\n\n$1\n\n') // Add line breaks around bold headings
-            .replace(/\*\s/g, '\n- ') // Convert bullet points into list format
-            .replace(/\n{3,}/g, '\n\n') // Ensure no excessive line breaks
-            .replace(/\s+/g, ' ') // Replace multiple spaces with a single space
-            .replace(/(^\w|\.\s*\w)/g, match => match.toUpperCase()); // Capitalize the first letter of sentences
+        // text = text
+        //     .trim() // Remove leading and trailing whitespace
+        //     .replace(/\*\*([^*]+)\*\*/g, '\n\n$1\n\n') // Add line breaks around bold headings
+        //     .replace(/\*\s/g, '\n- ') // Convert bullet points into list format
+        //     .replace(/\n{3,}/g, '\n\n') // Ensure no excessive line breaks
+        //     .replace(/\s+/g, ' ') // Replace multiple spaces with a single space
+        //     .replace(/(^\w|\.\s*\w)/g, match => match.toUpperCase()); // Capitalize the first letter of sentences
         res.json({ response: text });
     } catch (error) {
         console.error("Error:", error);
