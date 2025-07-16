@@ -7,14 +7,24 @@ import axios from "axios";
 
 const Navbar = () => {
   const [menu, setMenu] = useState("home");
-  const { getTotalCartAmount, token, setToken, url, setCartItems } = useContext(StoreContext);
+  const {
+    getTotalCartAmount,
+    token,
+    setToken,
+    url,
+    clearCart      // <— imported clearCart
+  } = useContext(StoreContext);
   const [userName, setUserName] = useState("");
   const navigate = useNavigate();
 
   const scroll = () => {
     const homeid = document.getElementById("home");
     if (homeid) {
-      homeid.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+      homeid.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+        inline: "nearest",
+      });
     }
   };
 
@@ -23,9 +33,14 @@ const Navbar = () => {
   };
 
   const logout = () => {
+    // 1) Remove auth token
     localStorage.removeItem("token");
     setToken("");
-    setCartItems({});
+
+    // 2) Clear cart via context helper
+    clearCart();
+
+    // 3) Redirect to home
     navigate("/");
   };
 
@@ -104,7 +119,11 @@ const Navbar = () => {
         ) : (
           <div className="navbar-profile">
             <div className="profile-content">
-              <img className="imgp" src={assets.profile_icon} alt="Profile Icon" />
+              <img
+                className="imgp"
+                src={assets.profile_icon}
+                alt="Profile Icon"
+              />
               <ul className="navbar-profile-dropdown">
                 <li onClick={() => navigate("/profile")}>
                   <svg
