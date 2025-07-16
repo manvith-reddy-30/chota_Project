@@ -1,16 +1,29 @@
-backend/.env
+**/node_modules
+**/.env
 
-npm run server
+.DS_Store
+**/.DS_Store
 
- npm run dev
-.DS_Store
-backend/.DS_Store
-backend/node_modules
-admin/.env
-frontend/.env
-admin/node_modules
-frontend/node_modules
-admin/.DS_Store
-admin/.DS_Store
-.DS_Store
-*/.DS_Store
+# Dependency directories
+node_modules/
+**/node_modules/
+
+# Environment files
+.env
+**/.env
+
+# Build output
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor/IDE settings
+.vscode/
+.idea/
+
+# OS junk
+Thumbs.db
