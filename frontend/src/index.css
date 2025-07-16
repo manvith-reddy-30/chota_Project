@@ -4,13 +4,14 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Outfit'; 
-  scroll-behavior: smooth; 
+  font-family: 'Outfit';
+  scroll-behavior: smooth;
 }
 
-body {
+body, html {
   min-height: 100vh;
-  /* background-color: grey; */
+  margin: 0;
+  padding: 0;
 }
 
 a {
@@ -18,16 +19,24 @@ a {
   color: inherit;
 }
 
-.app {
+/* Updated app layout */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-content {
+  flex: 1;
   width: 80%;
   margin: auto;
 }
+
 @keyframes fadeIn {
-  0%
-  {
-    opacity:0
+  0% {
+    opacity: 0
   }
-  100%{
+  100% {
     opacity: 1;
   }
 }

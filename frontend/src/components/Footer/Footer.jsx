@@ -1,40 +1,52 @@
 import React from 'react';
-import './Footer.css'
+import './Footer.css';
 import { assets } from '../../assets/assets';
+
 const Footer = () => {
   return (
-    <div className='footer' id='footer'>
-    <div className='footer-content'>
-        <div className='footer-content-left'> 
-        <img src ={assets.logo} alt=""/>
-        <p>Lorem ipsum</p>
-        <div className='footer-social-icons'>
-            <img src ={assets.facebook_icon} alt =""/>
-            <img src = {assets.linkedin_icon} alt = ""/>
-            <img src = {assets.twitter_icon} alt =""/>
-        </div>
-        </div>
-        <div className='footer-content-center'>
+    <footer className="footer" id="footer">
+      <div className="footer-container">
+        <div className="footer-content">
+          {/* Left: brand + socials */}
+          <div className="footer-section footer-section--brand">
+            <img src={assets.logo} alt="Tomato Logo" className="footer-logo" />
+            <p>Lorem ipsum</p>
+            <div className="footer-social-icons">
+              <img src={assets.facebook_icon} alt="Facebook" />
+              <img src={assets.linkedin_icon} alt="LinkedIn" />
+              <img src={assets.twitter_icon} alt="Twitter" />
+            </div>
+          </div>
+
+          {/* Center: company links */}
+          <div className="footer-section footer-section--links">
             <h2>Company</h2>
             <ul>
-                <li>Home</li>
-               <li>About Us</li>
-               <li>Delivery</li>
-               <li>Privacy Policy</li>
+              <li>Home</li>
+              <li>About Us</li>
+              <li>Delivery</li>
+              <li>Privacy Policy</li>
             </ul>
-        </div>
-        <div className='footer-content-right'>
-            <h2>Get In Touch </h2>
+          </div>
+
+          {/* Right: contact info */}
+          <div className="footer-section footer-section--contact">
+            <h2>Get In Touch</h2>
             <ul>
-                <li>+1-232-343-5365</li>
-                <li>contact@tomato.com</li>
+              <li>+1-232-343-5365</li>
+              <li>contact@tomato.com</li>
             </ul>
+          </div>
         </div>
-    </div>
-      <hr/>
-      <p className='footer-copyright'>Copyright 2024 © Tomato.com - All Right Reserved.</p>
-    </div>
+      </div>
+
+      <hr className="footer-divider" />
+
+      <div className="footer-copy">
+        Copyright 2024 © Tomato.com – All Rights Reserved.
+      </div>
+    </footer>
   );
-}
+};
 
 export default Footer;
