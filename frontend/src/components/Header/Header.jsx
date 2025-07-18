@@ -1,5 +1,7 @@
 import React  from 'react'
 import './Header.css'
+import { Typewriter } from 'react-simple-typewriter';
+
 const Header = () => {
 
   const scrollToMenu = () => {
@@ -13,11 +15,25 @@ const Header = () => {
     <div className='header' id='home'>
         <div className='headercontents'>
             <h2>
-              Order your favorite food here  
-            </h2>
+            <Typewriter
+              words={[
+                'Craving Something Delicious?',
+                'Add to Cart, Checkout, Done!',
+                'Your Favorite Dishes Delivered Fast!',
+              ]}
+              loop={true} 
+              cursor
+              cursorStyle='_'
+              typeSpeed={60}
+              deleteSpeed={40}
+              delaySpeed={1500}
+            />
+          </h2>
+
             <p>
-            Choose from a diverse menu featuring a delectable array of dishes crafted with the finest ingredients and culinary expertise. Our mission is to satisfy your cravings and elevate your dining experience, one delicious meal at a time.
-            </p>
+          From cart to cravings — browse a variety of dishes, add to cart in a click, pay securely, and get your food delivered hot and fresh. All in minutes. Zero hassle, full flavor!
+           </p>
+
             <button onClick={scrollToMenu}>View Menu</button>
         </div>
     </div>

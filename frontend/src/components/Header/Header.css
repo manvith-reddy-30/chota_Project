@@ -44,6 +44,12 @@
     margin-bottom: 5px;
 }
 
+.headercontents {
+  position: absolute;
+  z-index: 1;
+}
+
+
 @media (max-width:1050px) {
     .header{
         height: 38vw;
@@ -62,4 +68,10 @@
     .header-contents button{
         padding: 2vw 4vw;
     }
+}
+@media(max-width: 600px) {
+  .headercontents {
+    align-items: center;
+    text-align: center;
+  }
 }

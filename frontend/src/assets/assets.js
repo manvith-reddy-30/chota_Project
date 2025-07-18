@@ -11,7 +11,7 @@ import menu_5 from './menu_5.png'
 import menu_6 from './menu_6.png'
 import menu_7 from './menu_7.png'
 import menu_8 from './menu_8.png'
-
+import cusinecraze from './cusinecraze logo(crop).png'
 import food_1 from './food_1.png'
 import food_2 from './food_2.png'
 import food_3 from './food_3.png'
@@ -81,7 +81,8 @@ export const assets = {
     logout_icon,
     bag_icon,
     parcel_icon,
-    google_icon
+    google_icon,
+    cusinecraze
 }
 
 export const menu_list = [

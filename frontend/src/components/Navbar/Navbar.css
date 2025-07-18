@@ -1,3 +1,5 @@
+
+
 body {
   margin-top: 80px;
 }
@@ -20,21 +22,35 @@ body {
   margin-top: 80px;
 }
 
-.navbar .logo {
-  width: 150px;
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 1;
 }
 
+.logopng {
+  height: 35px;
+  width: auto;
+}
+
+.logoname {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ff7a00;
+  white-space: nowrap;
+}
 .navbar-menu {
   display: flex;
   list-style: none;
   gap: 20px;
-  color: #49557e;
+  color: solid black;
   font-size: 18px;
 }
 
 .navbar-menu .active {
   padding-bottom: 2px;
-  border-bottom: 2px solid #49557e;
+  border-bottom: 2px solid black;
 }
 
 .navbar-menu li {
@@ -180,5 +196,25 @@ body {
 @media (max-width: 750px) {
   .navbar-menu {
     display: none;
+  }
+}
+@media (max-width: 600px) {
+  .navbar {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .logo {
+    flex: 1;
+    justify-content: flex-start;
+  }
+
+  .logoname {
+    font-size: 1rem;
+  }
+
+  .logopng {
+    height: 28px;
   }
 }

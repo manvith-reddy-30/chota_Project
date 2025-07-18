@@ -5,7 +5,7 @@ import { assets } from "../../assets/assets";
 import { StoreContext } from "../../context/StoreContext";
 import axios from "axios";
 
-const Navbar = () => {
+const Navbar = (props) => {
   const [menu, setMenu] = useState("home");
   const {
     getTotalCartAmount,
@@ -16,7 +16,10 @@ const Navbar = () => {
   } = useContext(StoreContext);
   const [userName, setUserName] = useState("");
   const navigate = useNavigate();
+    const [showSearch, setShowSearch] = useState(false);
 
+  const searchTerm = props.searchTerm;
+  const setSearchTerm = props.setSearchTerm;
   const scroll = () => {
     const homeid = document.getElementById("home");
     if (homeid) {
@@ -61,10 +64,14 @@ const Navbar = () => {
 
   return (
     <div className="navbar">
-      <Link to="/">
-        <img src={assets.logo} alt="Logo" className="logo" />
+      
+      <div className="logo">
+        <Link to="/">
+        <img src={assets.cusinecraze} alt="Logo" className="logopng" />
       </Link>
+      <h1 className="logoname">CUISINECRAZE</h1>
 
+      </div>
       <ul className="navbar-menu">
         <Link
           to="/"
@@ -86,13 +93,7 @@ const Navbar = () => {
         >
           Menu
         </a>
-        <a
-          href="#app-download"
-          onClick={() => setMenu("Mobile-App")}
-          className={menu === "Mobile-App" ? "active" : ""}
-        >
-          Mobile-App
-        </a>
+        
         <a
           href="#footer"
           onClick={() => setMenu("Contact-Us")}
@@ -102,10 +103,29 @@ const Navbar = () => {
         </a>
       </ul>
 
-      <div className="navbar-right">
-        <img src={assets.search_icon} alt="Search" />
+      <div className={`navbar-right ${showSearch ? 'search-active' : ''}`}>
+      <div className="navbar-search">
+    {!showSearch ? (
+      <img
+        src={assets.search_icon}
+        alt="Search"
+        className="clickable-icon"
+        onClick={() => setShowSearch(true)}
+      />
+    ) : (
+      <input
+        type="text"
+        placeholder="Search menu..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="search-input"
+        autoFocus
+        onBlur={() => setShowSearch(false)} // Optional
+      />
+    )}
+  </div>
 
-        <div className="navbar-search-icon">
+        <div className="navbar-cart-icon">
           <Link to="/cart">
             <img src={assets.basket_icon} alt="Cart" />
           </Link>
