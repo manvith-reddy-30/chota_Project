@@ -1,19 +1,35 @@
 import jwt from "jsonwebtoken";
 
-const authMiddleWare = async(req,res,next) =>{
-    const {token} = req.headers;
+// Middleware to protect routes and set req.userId
+const authMiddleware = (req, res, next) => {
+  const token = req.cookies.token;
+  if (!token)
+    return res
+      .status(401)
+      .json({ success: false, message: "Unauthorized, token missing" });
 
-    if (!token){
-        return res.json({success:false,message:"Not authorized! Login again"})
-    }
-    try {
-        const token_decode = jwt.verify(token,process.env.JWT_SECRET);
-        req.body.userId = token_decode.id;
-        next();
-    } catch (error) {
-        console.log(error);
-        res.json({success:false,message:"Error"})
-    }
-}
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.id;
+    next();
+  } catch (err) {
+    console.log("Invalid token:", err);
+    return res.status(401).json({ success: false, message: "Invalid token" });
+  }
+};
 
-export default authMiddleWare;
+// Route for checking auth status without protecting route
+const checkauth = (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.json({ loggedIn: false });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    res.json({ loggedIn: true, userId: decoded.id });
+  } catch (err) {
+    console.log("Auth check failed:", err);
+    res.json({ loggedIn: false });
+  }
+};
+
+export { authMiddleware, checkauth };

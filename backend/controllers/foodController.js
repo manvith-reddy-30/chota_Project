@@ -1,50 +1,65 @@
 import foodModel from "../models/FoodModels.js";
-import fs from 'fs';
+import fs from "fs";
 
+// Add food
+const addFood = async (req, res) => {
+  try {
+    if (!req.file)
+      return res
+        .status(400)
+        .json({ success: false, message: "Image file is required" });
 
-const addFood = async(req,res) => {
-
-    let image_filename = `${req.file.filename}`;
+    const image_filename = req.file.filename;
 
     const food = new foodModel({
-        name:req.body.name,
-        description:req.body.description,
-        price:req.body.price,
-        image:image_filename,
-        category:req.body.category
-    })
-    try {
-        await food.save();
-        res.json({success:true,message:"Food Added"});
-    } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error" });
-    }
-}
+      name: req.body.name,
+      description: req.body.description,
+      price: req.body.price,
+      image: image_filename,
+      category: req.body.category,
+    });
 
-const listFood = async(req,res) => {
+    await food.save();
+    res.json({ success: true, message: "Food added successfully" });
+  } catch (error) {
+    console.log("Error adding food:", error);
+    res.status(500).json({ success: false, message: "Error adding food" });
+  }
+};
 
-    try {
-        const foods = await foodModel.find({});
-        res.json({success:true,data:foods})
-    } catch (error) {
-        console.log(error)
-        res.json({success:false,message:"Error"})
-    }
-}
+// List all food items
+const listFood = async (req, res) => {
+  try {
+    const foods = await foodModel.find({});
+    console.log(foods);
+    res.json({ success: true, data: foods });
+  } catch (error) {
+    console.log("Error listing food:", error);
+    res.status(500).json({ success: false, message: "Error listing food" });
+  }
+};
 
-const removeFood = async(req,res) =>{
+// Remove food
+const removeFood = async (req, res) => {
+  try {
+    const food = await foodModel.findById(req.body.id);
+    if (!food)
+      return res
+        .status(404)
+        .json({ success: false, message: "Food item not found" });
 
-    try {
-        const food = await foodModel.findById(req.body.id);
-        fs.unlink(`uploads/${food.image}`,()=>{});
+    // Delete image file if exists
+    const imagePath = `uploads/${food.image}`;
+    fs.unlink(imagePath, (err) => {
+      if (err) console.log("Error deleting image file:", err);
+    });
 
-        await foodModel.findByIdAndDelete(req.body.id);
-        res.json({success:true,message:"Food Removed"})
-    } catch (error) {
-        console.log(error)
-        res.json({success:false,message:"Error"})
-    }
-}
+    await foodModel.findByIdAndDelete(req.body.id);
+    res.json({ success: true, message: "Food removed successfully" });
+  } catch (error) {
+    console.log("Error removing food:", error);
+    res.status(500).json({ success: false, message: "Error removing food" });
+  }
+};
 
-export { addFood , listFood , removeFood}
+export { addFood, listFood, removeFood };

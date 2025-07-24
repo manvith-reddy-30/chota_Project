@@ -10,7 +10,7 @@ import Chatbot from './pages/ChatBot/ChatBot.jsx'
 import LoginPage from './pages/LoginPage/LoginPage'
 import ChatbotLogo from './components/ChatBotLogo/ChatBotLogo.jsx'
 import Footer from './components/Footer/Footer'
-import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute.jsx'
+import Profile from './pages/Profile/Profile.jsx'
 
 const App = () => {
   return (
@@ -18,23 +18,14 @@ const App = () => {
       <Navbar />
       <main className="app-content">
         <Routes>
-          {/* Public routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<Home />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/myorders" element={<MyOrders />} />
           <Route path="/chatbot" element={<Chatbot />} />
-
-          {/* Protected checkout route */}
-          <Route
-            path="/order"
-            element={
-              <ProtectedRoute>
-                <PlaceOrder />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/order" element={ <PlaceOrder />} />
+          <Route path="/profile" element ={ <Profile />} />
         </Routes>
 
         <ChatbotLogo />

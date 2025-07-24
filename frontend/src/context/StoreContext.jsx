@@ -9,20 +9,20 @@ const StoreContextProvider = (props) => {
 
   const [food_list, setFoodList] = useState([]);
   const [cartItems, setCartItems] = useState({});
-  const [token, setToken] = useState('');
+  const [loggedIn, setLoggedIn] = useState(false);
 
-  // Helper to update cart in state + localStorage
+  // Update cart in state + localStorage
   const updateCart = (newCart) => {
     setCartItems(newCart);
     localStorage.setItem('cartItems', JSON.stringify(newCart));
   };
 
-  // Helper to clear the cart completely
+  // Clear the cart completely
   const clearCart = () => {
     updateCart({});
   };
 
-  // Fetch list of foods
+  // Fetch food list
   const fetchFoodList = async () => {
     try {
       const response = await axios.get(`${url}/api/food/list`);
@@ -32,13 +32,30 @@ const StoreContextProvider = (props) => {
     }
   };
 
-  // Load cart from server (for logged‑in users)
-  const loadCartData = async (authToken) => {
+  // Check login status via httpOnly cookie
+  const checkLoginStatus = async () => {
+    try {
+      const res = await axios.get(`${url}/api/user/check-auth`, { withCredentials: true });
+      setLoggedIn(res.data.loggedIn);
+      
+      return res.data.loggedIn;
+    } catch (err) {
+      console.error('Error checking login status:', err);
+      setLoggedIn(false);
+      return false;
+    }
+  };
+
+  // Load cart from server if logged in
+  const loadCartData = async () => {
+    const isLoggedIn = await checkLoginStatus();
+    if (!isLoggedIn) return;
+
     try {
       const response = await axios.post(
         `${url}/api/cart/get`,
         {},
-        { headers: { token: authToken } }
+        { withCredentials: true }
       );
       const serverCart = response.data.cartData || {};
       updateCart(serverCart);
@@ -47,22 +64,22 @@ const StoreContextProvider = (props) => {
     }
   };
 
-  // Add an item locally + server if logged in
+  // Add item to cart locally and server
   const addToCart = async (itemId) => {
     const newQty = (cartItems[itemId] || 0) + 1;
     const newCart = { ...cartItems, [itemId]: newQty };
     updateCart(newCart);
 
-    if (token) {
+    if (loggedIn) {
       try {
-        await axios.post(`${url}/api/cart/add`, { itemId }, { headers: { token } });
+        await axios.post(`${url}/api/cart/add`, { itemId }, { withCredentials: true });
       } catch (err) {
         console.error('Error adding to server cart:', err);
       }
     }
   };
 
-  // Remove an item locally + server if logged in
+  // Remove item from cart locally and server
   const removeFromCart = async (itemId) => {
     const newQty = (cartItems[itemId] || 0) - 1;
     const newCart = { ...cartItems };
@@ -70,16 +87,16 @@ const StoreContextProvider = (props) => {
     else delete newCart[itemId];
     updateCart(newCart);
 
-    if (token) {
+    if (loggedIn) {
       try {
-        await axios.post(`${url}/api/cart/remove`, { itemId }, { headers: { token } });
+        await axios.post(`${url}/api/cart/remove`, { itemId }, { withCredentials: true });
       } catch (err) {
         console.error('Error removing from server cart:', err);
       }
     }
   };
 
-  // Compute total cart amount
+  // Calculate total cart amount
   const getTotalCartAmount = () => {
     let total = 0;
     for (const itemId in cartItems) {
@@ -91,8 +108,7 @@ const StoreContextProvider = (props) => {
     return total;
   };
 
-  // On app load: hydrate from localStorage, fetch foods, then if logged in load server cart
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // On app load: hydrate local cart, fetch foods, check login, load server cart
   useEffect(() => {
     const saved = localStorage.getItem('cartItems');
     if (saved) {
@@ -103,16 +119,9 @@ const StoreContextProvider = (props) => {
       }
     }
 
-    const savedToken = localStorage.getItem('token');
-    if (savedToken) {
-      setToken(savedToken);
-    }
-
     const init = async () => {
       await fetchFoodList();
-      if (savedToken) {
-        await loadCartData(savedToken);
-      }
+      await loadCartData();
     };
     init();
   }, []);
@@ -126,8 +135,8 @@ const StoreContextProvider = (props) => {
     removeFromCart,
     getTotalCartAmount,
     url,
-    token,
-    setToken,
+    loggedIn,
+    checkLoginStatus,
     loadCartData,
   };
 

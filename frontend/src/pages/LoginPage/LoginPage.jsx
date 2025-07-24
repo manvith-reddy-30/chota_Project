@@ -1,83 +1,82 @@
-// src/pages/LoginPage/LoginPage.jsx
-
-import React, { useState, useContext } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { auth, provider } from '../../firebase/firebase'
-import { signInWithPopup } from 'firebase/auth'
-import axios from 'axios'
-import { assets } from '../../assets/assets'
-import { StoreContext } from '../../context/StoreContext'
-import './LoginPage.css'
+import React, { useState, useContext } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { auth, provider } from '../../firebase/firebase';
+import { signInWithPopup } from 'firebase/auth';
+import axios from 'axios';
+import { assets } from '../../assets/assets';
+import { StoreContext } from '../../context/StoreContext';
+import './LoginPage.css';
 
 const LoginPage = () => {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { setToken, url, loadCartData } = useContext(StoreContext)
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { loadCartData, url } = useContext(StoreContext);
 
-  // Where to go after login
-  const from = location.state?.from?.pathname || '/'
+  const from = location.state?.from?.pathname || '/';
 
-  const [mode, setMode] = useState('Login')
-  const [data, setData] = useState({ name: '', email: '', password: '' })
-  const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [mode, setMode] = useState('Login');
+  const [data, setData] = useState({ name: '', email: '', password: '' });
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const onChange = (e) => {
-    const { name, value } = e.target
-    setData((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleSuccess = async (tokenValue) => {
-    // 1) Save token
-    setToken(tokenValue)
-    localStorage.setItem('token', tokenValue)
-
-    // 2) Pull in server‐side cart now that we’re authenticated
-    await loadCartData(tokenValue)
-
-    // 3) Redirect back to where the user wanted to go
-    navigate(from, { replace: true })
-  }
+  const handleSuccess = async () => {
+    await loadCartData();
+    navigate(from, { replace: true });
+  };
 
   const submit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-    const endpoint = mode === 'Login' ? '/api/user/login' : '/api/user/register'
+    const endpoint = mode === 'Login' ? '/api/user/login' : '/api/user/register';
     try {
-      const res = await axios.post(`${url}${endpoint}`, data)
+      const res = await axios.post(`${url}${endpoint}`, data, {
+        withCredentials: true,
+      });
       if (res.data.success) {
-        await handleSuccess(res.data.token)
+        await handleSuccess();
       } else {
-        setError(res.data.message)
+        setError(res.data.message);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Unexpected error')
+      setError(err.response?.data?.message || 'Unexpected error');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const googleLogin = async () => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     try {
-      const result = await signInWithPopup(auth, provider)
-      const user = result.user
-      const payload = { name: user.displayName, email: user.email, password: user.uid }
-      const res = await axios.post(`${url}/api/user/google-login`, payload)
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const payload = {
+        name: user.displayName,
+        email: user.email,
+        password: user.uid,
+      };
+      const res = await axios.post(`${url}/api/user/google-login`, payload, {
+        withCredentials: true,
+      });
       if (res.data.success) {
-        await handleSuccess(res.data.token)
+        await handleSuccess();
       } else {
-        setError(res.data.message)
+        setError(res.data.message);
       }
     } catch (err) {
-      setError('Google login failed')
+      console.error('Google login failed:', err);
+      setError('Google login failed');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="login-page">
@@ -148,7 +147,7 @@ const LoginPage = () => {
         </div>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default LoginPage
+export default LoginPage;
