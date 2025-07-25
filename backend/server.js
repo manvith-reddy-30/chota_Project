@@ -6,7 +6,10 @@ import userRouter from "./routes/userRoute.js";
 import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/orderRoute.js";
 import cookieParser from "cookie-parser";
-import "dotenv/config";
+import dotenv from "dotenv";
+
+
+dotenv.config();
 
 // App config
 const app = express();
@@ -18,7 +21,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: [frontend_url,"http://localhost:5174","http://localhost:5173"] ,
+    origin: [frontend_url,"http://localhost:5174","http://localhost:5173","https://cuisinecraze.netlify.app"] ,
     credentials: true,
   })
 );
