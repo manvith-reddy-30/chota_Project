@@ -31,8 +31,17 @@ const Navbar = (props) => {
     checkLoginStatus();
   }, [checkLoginStatus]);
 
-  const scrollToMenu = () => {
-    navigate("/#explore-menu");
+  const scrollToFoodDisplay = () => {
+    const foodDisplay = document.getElementById("food-display");
+    if (foodDisplay) {
+      foodDisplay.scrollIntoView({ behavior: "smooth", block: "start" });
+      setTimeout(() => {
+        window.scrollBy({
+          top: 100, // adjust as needed for "somewhat more"
+          behavior: "smooth",
+        });
+      }, 500);
+    }
   };
 
   const logout = async () => {
@@ -66,7 +75,6 @@ const Navbar = (props) => {
           <img src={assets.cusinecraze} alt="Logo" className="logopng" />
           <h1 className="logoname">CUISINECRAZE</h1>
         </Link>
-        
       </div>
 
       <ul className="navbar-menu">
@@ -79,7 +87,7 @@ const Navbar = (props) => {
         </Link>
         <a
           href="#explore-menu"
-          onClick={() => { setMenu("Menu"); scrollToMenu(); }}
+          onClick={() => setMenu("Menu")}
           className={menu === "Menu" ? "active" : ""}
         >
           Menu
@@ -103,15 +111,51 @@ const Navbar = (props) => {
               onClick={() => setShowSearch(true)}
             />
           ) : (
-            <input
-              type="text"
-              placeholder="Search menu..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-              autoFocus
-              onBlur={() => setShowSearch(false)}
-            />
+            <div className="navbar-search">
+              <div className="search-container">
+                <input
+                  type="text"
+                  placeholder="Search menu..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input stylish-search-input"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const foodDisplay = document.getElementById("explore-menu");
+                      if (foodDisplay) {
+                        foodDisplay.scrollIntoView({ behavior: "smooth", block: "start" });
+                        setTimeout(() => {
+                          window.scrollBy({ top: 150, behavior: "smooth" });
+                        }, 500);
+                      }
+                    }
+                  }}
+                />
+                {searchTerm ? (
+                  <img
+                    src={assets.cross_icon} // replace with your clear icon path
+                    alt="Clear"
+                    className="search-action-icon"
+                    onClick={() => setSearchTerm("")}
+                  />
+                ) : (
+                  <img
+                    src={assets.search_icon}
+                    alt="Search"
+                    className="search-action-icon"
+                    onClick={() => {
+                      const foodDisplay = document.getElementById("food-display");
+                      if (foodDisplay) {
+                        foodDisplay.scrollIntoView({ behavior: "smooth", block: "start" });
+                        setTimeout(() => {
+                          window.scrollBy({ top: 200, behavior: "smooth" });
+                        }, 500);
+                      }
+                    }}
+                  />
+                )}
+              </div>
+            </div>
           )}
         </div>
 
@@ -130,14 +174,8 @@ const Navbar = (props) => {
               <img className="imgp" src={assets.profile_icon} alt="Profile Icon" />
               <ul className="navbar-profile-dropdown">
                 <li onClick={() => navigate("/profile")}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16" height="16"
-                    fill="currentColor"
-                    className="bi bi-person-fill"
-                    viewBox="0 0 16 16"
-                    style={{ color: "orange" }}
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    className="bi bi-person-fill" viewBox="0 0 16 16" style={{ color: "orange" }}>
                     <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
                   </svg>
                   <p>Profile</p>

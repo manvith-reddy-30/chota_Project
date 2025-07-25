@@ -26,6 +26,11 @@ const Chatbot = () => {
   }, []);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
+
+  useEffect(() => {
     localStorage.setItem('chatMessages', JSON.stringify(messages));
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;

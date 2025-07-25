@@ -6,7 +6,6 @@ import jwt from "jsonwebtoken";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // PLACE ORDER
-
 const placeOrder = async (req, res) => {
   const frontend_url = process.env.FRONTEND_URL;
 
@@ -62,7 +61,7 @@ const placeOrder = async (req, res) => {
       cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder._id}`,
     });
 
-    res.status(202).json({ success: true, session_url: session.url });
+    res.status(201).json({ success: true, session_url: session.url });
   } catch (error) {
     console.log("Place order error:", error);
     res.status(500).json({ success: false, message: "Error placing order" });
@@ -84,19 +83,17 @@ const verifyOrder = async (req, res) => {
       order.payment = true;
       order.status = "paid";
       await order.save();
-      res.json({ success: true, message: "Payment successful" });
+      res.status(200).json({ success: true, message: "Payment successful" });
     } else {
       // Payment failed → delete order so it doesn't appear in My Orders
       await orderModel.findByIdAndDelete(orderId);
-      res.json({ success: false, message: "Payment failed, order deleted" });
+      res.status(200).json({ success: false, message: "Payment failed, order deleted" });
     }
   } catch (error) {
     console.log("Verify order error:", error);
     res.status(500).json({ success: false, message: "Error verifying order" });
   }
 };
-
-
 
 // Get user orders
 const userOrders = async (req, res) => {
@@ -109,7 +106,7 @@ const userOrders = async (req, res) => {
     const userId = decoded.id;
 
     const orders = await orderModel.find({ userId });
-    res.json({ success: true, data: orders });
+    res.status(200).json({ success: true, data: orders });
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: "Error fetching orders" });
@@ -120,7 +117,7 @@ const userOrders = async (req, res) => {
 const listOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({});
-    res.json({ success: true, data: orders });
+    res.status(200).json({ success: true, data: orders });
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: "Error listing orders" });
@@ -132,7 +129,7 @@ const updateStatus = async (req, res) => {
   const { orderId, status } = req.body;
   try {
     await orderModel.findByIdAndUpdate(orderId, { status });
-    res.json({ success: true, message: "Status updated" });
+    res.status(200).json({ success: true, message: "Status updated" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: "Error updating status" });

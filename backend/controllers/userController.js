@@ -17,11 +17,14 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await userModel.findOne({ email });
-    if (!user) return res.status(400).json({ message: "User not found" });
+    if (!user)
+      return res.status(400).json({ message: "User not found", success: false });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res
+        .status(400)
+        .json({ message: "Invalid credentials", success: false });
 
     const token = createToken(user._id);
 
@@ -29,11 +32,10 @@ const loginUser = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "Lax",
-      secure: false,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.status(202).json({ message: "Logged in successfully", success: true });
+    res.status(200).json({ message: "Logged in successfully", success: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error", success: false });
@@ -46,13 +48,17 @@ const registerUser = async (req, res) => {
   try {
     const exists = await userModel.findOne({ email });
     if (exists)
-      return res.json({ success: false, message: "User already exists" });
+      return res
+        .status(400)
+        .json({ success: false, message: "User already exists" });
 
     if (!validator.isEmail(email))
-      return res.json({ success: false, message: "Please enter a valid email" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Please enter a valid email" });
 
     if (password.length < 8)
-      return res.json({
+      return res.status(400).json({
         success: false,
         message: "Please enter a strong password",
       });
@@ -69,14 +75,13 @@ const registerUser = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "Lax",
-      secure: false,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.json({ success: true, message: "Registered successfully" });
+    res.status(201).json({ success: true, message: "Registered successfully" });
   } catch (error) {
     console.log("Error during registration:", error);
-    res.json({ success: false, message: "Error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -93,10 +98,10 @@ const getName = async (req, res) => {
     if (!userData)
       return res.status(404).json({ success: false, message: "User not found" });
 
-    res.json({ success: true, userName: userData.name });
+    res.status(200).json({ success: true, userName: userData.name });
   } catch (error) {
     console.log("Error fetching user name:", error);
-    res.json({ success: false, message: "Error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -130,7 +135,7 @@ const googleLogin = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.json({ success: true, message: "Logged in with Google" });
+    res.status(200).json({ success: true, message: "Logged in with Google" });
   } catch (error) {
     console.error("Google login error:", error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -144,7 +149,7 @@ const logout = (req, res) => {
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   });
-  res.json({ message: "Logged out successfully", success: true });
+  res.status(200).json({ message: "Logged out successfully", success: true });
 };
 
 // Get AI response
@@ -192,7 +197,7 @@ Now, respond to the user's prompt below:
     const response = result.response;
     const text = response.text();
 
-    res.json({ response: text });
+    res.status(200).json({ response: text });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Something went wrong!" });

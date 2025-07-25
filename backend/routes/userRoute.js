@@ -13,9 +13,7 @@ userRouter.post("/google-login", googleLogin);
 userRouter.get("/name",authMiddleware,getName);
 userRouter.post("/chat",getresponse);
 
-userRouter.get("/check-auth",checkauth ,(req, res) => {
-    res.json({ loggedIn: true, userId: req.userId });
-});
+userRouter.get("/check-auth",checkauth);
 
 userRouter.get("/logout",logout)
 export default userRouter;  

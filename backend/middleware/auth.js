@@ -21,14 +21,15 @@ const authMiddleware = (req, res, next) => {
 // Route for checking auth status without protecting route
 const checkauth = (req, res) => {
   const token = req.cookies.token;
-  if (!token) return res.json({ loggedIn: false });
+  if (!token)
+    return res.status(200).json({ loggedIn: false });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    res.json({ loggedIn: true, userId: decoded.id });
+    res.status(200).json({ loggedIn: true, userId: decoded.id });
   } catch (err) {
     console.log("Auth check failed:", err);
-    res.json({ loggedIn: false });
+    res.status(200).json({ loggedIn: false });
   }
 };
 

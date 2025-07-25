@@ -3,24 +3,24 @@ import './FoodDisplay.css'
 import { StoreContext } from '../../context/StoreContext';
 import FoodItem from '../FoodItem/FoodItem';
 
-const FoodDisplay = ({category,searchTerm}) => {
+const FoodDisplay = ({ category, searchTerm }) => {
+  const { food_list } = useContext(StoreContext);
+  const filteredList = food_list.filter((item) => {
+    const search = searchTerm.trim().toLowerCase();
+    const matchesSearch =
+      item.name.toLowerCase().includes(search) ||
+      item.category.toLowerCase().includes(search);
 
-  const { food_list} = useContext(StoreContext)
- const filteredList = food_list.filter((item) => {
-  const search = searchTerm.trim().toLowerCase();
-  const matchesSearch =
-    item.name.toLowerCase().includes(search) ||
-    item.category.toLowerCase().includes(search);
-    
-  return category === "All"
-    ? matchesSearch
-    : (item.category === category && matchesSearch);
-});
+    return category === "All"
+      ? matchesSearch
+      : (item.category === category && matchesSearch);
+  });
 
- 
   return (
-    <div className='food-display' id ='food-display'>
-      <h2>Top dishes near you</h2>
+    <div className='food-display' id='food-display'>
+      <h2 style={{ marginTop: '30px', color: 'orange' }}>
+        {searchTerm ? `Search Results for "${searchTerm}"` : 'Top Dishes Near You'}
+      </h2>
       <div className='food-display-list'>
         {filteredList.length > 0 ? (
           filteredList.map((item, index) => (

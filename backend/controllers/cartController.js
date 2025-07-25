@@ -30,7 +30,7 @@ const addToCart = async (req, res) => {
     }
 
     await userModel.findByIdAndUpdate(userId, { cartData });
-    res.json({ success: true, message: "Added to cart", cartData });
+    res.status(200).json({ success: true, message: "Added to cart", cartData });
   } catch (error) {
     console.log("Error adding to cart:", error);
     res.status(500).json({ success: false, message: "Error adding to cart" });
@@ -66,7 +66,7 @@ const removeFromCart = async (req, res) => {
     }
 
     await userModel.findByIdAndUpdate(userId, { cartData });
-    res.json({ success: true, message: "Removed from cart", cartData });
+    res.status(200).json({ success: true, message: "Removed from cart", cartData });
   } catch (error) {
     console.log("Error removing from cart:", error);
     res.status(500).json({ success: false, message: "Error removing from cart" });
@@ -88,7 +88,7 @@ const getCart = async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
 
     let cartData = userData.cartData || {};
-    res.json({ success: true, cartData });
+    res.status(200).json({ success: true, cartData });
   } catch (error) {
     console.log("Error fetching cart:", error);
     res.status(500).json({ success: false, message: "Error fetching cart" });
