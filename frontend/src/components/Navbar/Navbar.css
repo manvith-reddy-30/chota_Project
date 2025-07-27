@@ -69,11 +69,11 @@ body {
   gap: 40px;
 }
 
-.navbar-search-icon {
+.navbar-cart-icon {
   position: relative;
 }
 
-.navbar-search-icon .dot {
+.navbar-cart-icon .dot {
   position: absolute;
   min-width: 10px;
   min-height: 10px;

@@ -8,7 +8,6 @@ import orderRouter from "./routes/orderRoute.js";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 
-
 dotenv.config();
 
 // App config
@@ -21,14 +20,16 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: [frontend_url,"http://localhost:5174","http://localhost:5173","https://cuisinecraze.netlify.app"] ,
+    origin: [frontend_url, "http://localhost:5174", "http://localhost:5173", "https://cuisinecraze.netlify.app"],
     credentials: true,
   })
 );
+
+// Allow preflight (CORS) requests
 app.options("*", cors());
 
 // Database connection
-connectDB()
+connectDB();
 
 // API endpoints
 app.use("/api/food", foodRouter);
