@@ -8,6 +8,7 @@ import { sendInvoiceMail } from "../utils/email.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+// Place Order
 const placeOrder = async (req, res) => {
   const frontend_url = process.env.FRONTEND_URL;
   try {
@@ -16,6 +17,7 @@ const placeOrder = async (req, res) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
+
     const user = await userModel.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
@@ -42,6 +44,7 @@ const placeOrder = async (req, res) => {
       quantity: item.quantity,
     }));
 
+    // Add delivery charge
     line_items.push({
       price_data: {
         currency: "inr",
@@ -59,15 +62,16 @@ const placeOrder = async (req, res) => {
     });
 
     res.status(201).json({ success: true, session_url: session.url });
-
   } catch (error) {
     console.error("Place order error:", error);
     res.status(500).json({ success: false, message: "Error placing order" });
   }
 };
 
+// Verify Order Payment
 const verifyOrder = async (req, res) => {
   const { orderId, success } = req.body;
+
   try {
     if (!orderId) return res.status(400).json({ success: false, message: "Order ID missing" });
 
@@ -105,18 +109,17 @@ const verifyOrder = async (req, res) => {
       }
 
       res.status(200).json({ success: true, message: "Payment verified, invoice sent." });
-
     } else {
       await orderModel.findByIdAndDelete(orderId);
       res.status(200).json({ success: false, message: "Payment failed, order removed." });
     }
-
   } catch (error) {
     console.error("Verify order error:", error);
     res.status(500).json({ success: false, message: "Error verifying payment" });
   }
 };
 
+// Get orders of logged-in user
 const userOrders = async (req, res) => {
   try {
     const token = req.cookies.token;
@@ -127,13 +130,13 @@ const userOrders = async (req, res) => {
 
     const orders = await orderModel.find({ userId });
     res.status(200).json({ success: true, data: orders });
-
   } catch (error) {
     console.error("User orders error:", error);
     res.status(500).json({ success: false, message: "Error fetching orders" });
   }
 };
 
+// Admin: List all orders
 const listOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({});
@@ -144,6 +147,7 @@ const listOrders = async (req, res) => {
   }
 };
 
+// Admin: Update order status
 const updateStatus = async (req, res) => {
   const { orderId, status } = req.body;
   try {

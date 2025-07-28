@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Create token
+// JWT token generator
 const createToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
@@ -18,13 +18,11 @@ const loginUser = async (req, res) => {
   try {
     const user = await userModel.findOne({ email });
     if (!user)
-      return res.status(400).json({ message: "User not found", success: false });
+      return res.status(400).json({ success: false, message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
-      return res
-        .status(400)
-        .json({ message: "Invalid credentials", success: false });
+      return res.status(400).json({ success: false, message: "Invalid credentials" });
 
     const token = createToken(user._id);
 
@@ -35,10 +33,10 @@ const loginUser = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.status(200).json({ message: "Logged in successfully", success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error", success: false });
+    res.status(200).json({ success: true, message: "Logged in successfully" });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -48,20 +46,13 @@ const registerUser = async (req, res) => {
   try {
     const exists = await userModel.findOne({ email });
     if (exists)
-      return res
-        .status(400)
-        .json({ success: false, message: "User already exists" });
+      return res.status(400).json({ success: false, message: "User already exists" });
 
     if (!validator.isEmail(email))
-      return res
-        .status(400)
-        .json({ success: false, message: "Please enter a valid email" });
+      return res.status(400).json({ success: false, message: "Please enter a valid email" });
 
     if (password.length < 8)
-      return res.status(400).json({
-        success: false,
-        message: "Please enter a strong password",
-      });
+      return res.status(400).json({ success: false, message: "Password must be at least 8 characters" });
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -80,12 +71,12 @@ const registerUser = async (req, res) => {
 
     res.status(201).json({ success: true, message: "Registered successfully" });
   } catch (error) {
-    console.log("Error during registration:", error);
+    console.error("Registration error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-// Get user name using cookie token
+// Get user's name from cookie token
 const getName = async (req, res) => {
   try {
     const token = req.cookies.token;
@@ -100,20 +91,18 @@ const getName = async (req, res) => {
 
     res.status(200).json({ success: true, userName: userData.name });
   } catch (error) {
-    console.log("Error fetching user name:", error);
+    console.error("Get name error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-// Google login
+// Google login (with fallback registration)
 const googleLogin = async (req, res) => {
   const { name, email } = req.body;
 
   try {
     if (!email)
-      return res
-        .status(400)
-        .json({ success: false, message: "Email is required" });
+      return res.status(400).json({ success: false, message: "Email is required" });
 
     let user = await userModel.findOne({ email });
 
@@ -142,37 +131,34 @@ const googleLogin = async (req, res) => {
   }
 };
 
-// Logout
+// Logout user
 const logout = (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   });
-  res.status(200).json({ message: "Logged out successfully", success: true });
+  res.status(200).json({ success: true, message: "Logged out successfully" });
 };
 
-// Get AI response
+// AI chatbot response
 const getresponse = async (req, res) => {
   try {
     const { prompt, cartItems, foodList } = req.body;
 
-    const making_it = `
+    const context = `
 You are a helpful and professional restaurant assistant chatbot for a food ordering website.
 
-✅ **Instructions:**
-- Answer **only food-related queries** (menu items, ingredients, nutrition, offers, timings).
-- You can answer foods culture and local restaurants related queries.
-- If the question is **not food-related**, respond with: "I am not able to answer this question."
-- Structure your response clearly using **Markdown**:
-- **Bold headings**
-- Short paragraphs
-- Bullet points for menus or lists
-- Keep tone **friendly, concise, and easy to read**
+✅ Instructions:
+- Only answer food-related queries (menu, ingredients, nutrition, offers, timings).
+- If the question is not food-related, respond: "I am not able to answer this question."
+- Structure your reply using Markdown with:
+  - Bold headings
+  - Bullet points
+  - Friendly and concise tone
 
-✅ **Context:**
-- The user is chatting with a restaurant AI on our food website.
-- Here’s their current cart:
+✅ Context:
+- User's current cart:
 ${Object.entries(cartItems || {})
   .map(([id, qty]) => {
     const item = foodList.find((f) => f._id === id);
@@ -181,26 +167,24 @@ ${Object.entries(cartItems || {})
   .filter(Boolean)
   .join("\n")}
 
-- Available Menu Items:
+- Available Menu:
 ${(foodList || [])
   .map((item) => `- ${item.name} (₹${item.price})`)
   .join("\n")}
 
-Now, respond to the user's prompt below:
+Now respond to the prompt:
+User: ${prompt}
 `;
-
-    const fullPrompt = `${making_it}\n\nUser prompt: ${prompt}`;
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const result = await model.generateContent(fullPrompt);
-    const response = result.response;
-    const text = response.text();
+    const result = await model.generateContent(context);
+    const text = result.response.text();
 
     res.status(200).json({ response: text });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Something went wrong!" });
+    console.error("AI response error:", error);
+    res.status(500).json({ success: false, message: "Something went wrong!" });
   }
 };
 

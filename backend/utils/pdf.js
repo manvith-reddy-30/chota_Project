@@ -25,19 +25,19 @@ const generateInvoicePDF = async ({ customerName, customerEmail, items, totalPri
   // 🔵 Title
   drawText("Cuisine Craze - Tax Invoice", 160, y, 16, true, rgb(0, 0, 1));
 
-  // 🟢 Company info
+  // 🟢 Company Info
   y -= 30;
   drawText("Cuisine Craze Restaurant", 50, y, 12, true);
   drawText("123 Street Name, City, India - 500001", 50, y - 15);
   drawText("Contact: +91-9876543210 | support@cuisinecraze.com", 50, y - 30);
 
-  // 🔹 Invoice details
+  // 🔹 Invoice Metadata
   y -= 60;
   drawText(`Invoice No: INV-${Date.now().toString().slice(-6)}`, 50, y);
   drawText("Payment Method: Online", 50, y - 20);
   drawText(`Date: ${new Date().toLocaleDateString()}`, 400, y);
 
-  // 🔸 Customer info
+  // 🔸 Customer Info
   y -= 50;
   drawText(`Customer Name: ${customerName}`, 50, y);
   drawText(`Customer Email: ${customerEmail}`, 50, y - 20);
@@ -48,7 +48,7 @@ const generateInvoicePDF = async ({ customerName, customerEmail, items, totalPri
   drawText("Qty", 300, y, 12, true);
   drawText("Price (Rs.)", 400, y, 12, true);
 
-  // 🛒 Items
+  // 🛒 Item Rows
   y -= 20;
   items.forEach((item) => {
     drawText(item.name, 50, y);
@@ -65,39 +65,47 @@ const generateInvoicePDF = async ({ customerName, customerEmail, items, totalPri
   drawText(`GST: Rs. 0.00`, 50, y - 20, 12, true);
   drawText(`Total Amount: Rs. ${totalPrice.toFixed(2)}`, 50, y - 40, 14, true, rgb(0, 0.6, 0));
 
-  // 💡 Quote + Thanks
+  // 💡 Quote and Thank You
   y -= 80;
   drawText(`"Good food is the foundation of genuine happiness." – Auguste Escoffier`, 50, y, 10);
-  drawText(`Thank you for ordering with Cuisine Craze!`, 50, y - 20, 12, false, rgb(0, 0.6, 0));
+  drawText("Thank you for ordering with Cuisine Craze!", 50, y - 20, 12, false, rgb(0, 0.6, 0));
 
-  // 🧾 Optional QR (if image exists)
-  const qrPath = path.resolve("assets", "qr.png");
-  if (fs.existsSync(qrPath)) {
-    const qrBytes = fs.readFileSync(qrPath);
-    const qrImage = await pdfDoc.embedPng(qrBytes);
-    const qrDims = qrImage.scale(1.2);
-    page.drawImage(qrImage, {
-      x: 440,
-      y: 90,
-      width: qrDims.width,
-      height: qrDims.height,
-    });
-    drawText("Scan for Support", 440, 85);
+  // 🧾 Optional QR Image
+  try {
+    const qrPath = path.resolve("assets", "qr.png");
+    if (fs.existsSync(qrPath)) {
+      const qrBytes = fs.readFileSync(qrPath);
+      const qrImage = await pdfDoc.embedPng(qrBytes);
+      const qrDims = qrImage.scale(1.2);
+      page.drawImage(qrImage, {
+        x: 440,
+        y: 90,
+        width: qrDims.width,
+        height: qrDims.height,
+      });
+      drawText("Scan for Support", 440, 85);
+    }
+  } catch (err) {
+    console.warn("QR image error:", err.message);
   }
 
-  // ✍️ Signature (if image exists)
-  const signaturePath = path.resolve("assets", "signature.png");
-  if (fs.existsSync(signaturePath)) {
-    const sigBytes = fs.readFileSync(signaturePath);
-    const sigImage = await pdfDoc.embedPng(sigBytes);
-    const sigDims = sigImage.scale(0.5);
-    page.drawImage(sigImage, {
-      x: 440,
-      y: 30,
-      width: sigDims.width,
-      height: sigDims.height,
-    });
-    drawText("Authorized Signature", 440, 25 - sigDims.height, 10);
+  // ✍️ Optional Signature Image
+  try {
+    const signaturePath = path.resolve("assets", "signature.png");
+    if (fs.existsSync(signaturePath)) {
+      const sigBytes = fs.readFileSync(signaturePath);
+      const sigImage = await pdfDoc.embedPng(sigBytes);
+      const sigDims = sigImage.scale(0.5);
+      page.drawImage(sigImage, {
+        x: 440,
+        y: 30,
+        width: sigDims.width,
+        height: sigDims.height,
+      });
+      drawText("Authorized Signature", 440, 25 - sigDims.height, 10);
+    }
+  } catch (err) {
+    console.warn("Signature image error:", err.message);
   }
 
   // 🧾 Footer

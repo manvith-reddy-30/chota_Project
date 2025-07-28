@@ -1,28 +1,31 @@
+// ✅ Refactored foodController.js
 import foodModel from "../models/FoodModels.js";
 import fs from "fs";
+import path from "path";
 
-// Add food
+// Add food item
 const addFood = async (req, res) => {
   try {
-    if (!req.file)
+    if (!req.file) {
       return res
         .status(400)
         .json({ success: false, message: "Image file is required" });
-
-    const image_filename = req.file.filename;
+    }
 
     const food = new foodModel({
       name: req.body.name,
       description: req.body.description,
       price: req.body.price,
-      image: image_filename,
+      image: req.file.filename,
       category: req.body.category,
     });
 
     await food.save();
-    res.status(201).json({ success: true, message: "Food added successfully" });
+    res
+      .status(201)
+      .json({ success: true, message: "Food added successfully" });
   } catch (error) {
-    console.log("Error adding food:", error);
+    console.error("Add food error:", error);
     res.status(500).json({ success: false, message: "Error adding food" });
   }
 };
@@ -30,33 +33,35 @@ const addFood = async (req, res) => {
 // List all food items
 const listFood = async (req, res) => {
   try {
-    const foods = await foodModel.find({});
+    const foods = await foodModel.find({}).lean(); // lean() improves read perf
     res.status(200).json({ success: true, data: foods });
   } catch (error) {
-    console.log("Error listing food:", error);
+    console.error("List food error:", error);
     res.status(500).json({ success: false, message: "Error listing food" });
   }
 };
 
-// Remove food
+// Remove food item
 const removeFood = async (req, res) => {
   try {
     const food = await foodModel.findById(req.body.id);
-    if (!food)
+    if (!food) {
       return res
         .status(404)
         .json({ success: false, message: "Food item not found" });
+    }
 
-    // Delete image file if exists
-    const imagePath = `uploads/${food.image}`;
+    const imagePath = path.join("uploads", food.image);
     fs.unlink(imagePath, (err) => {
-      if (err) console.log("Error deleting image file:", err);
+      if (err) console.error("Image deletion error:", err);
     });
 
     await foodModel.findByIdAndDelete(req.body.id);
-    res.status(200).json({ success: true, message: "Food removed successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Food removed successfully" });
   } catch (error) {
-    console.log("Error removing food:", error);
+    console.error("Remove food error:", error);
     res.status(500).json({ success: false, message: "Error removing food" });
   }
 };
