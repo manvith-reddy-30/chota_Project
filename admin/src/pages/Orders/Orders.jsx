@@ -12,7 +12,17 @@ const Orders = ({ url }) => {
     try {
       const response = await axios.get(`${url}/api/order/list`);
       if (response.data.success) {
-        setOrders(response.data.data);
+        let fetchedOrders = response.data.data;
+        
+        // 🚨 CHANGE: Sorting Logic Added Here
+        // Sorts from latest date (descending) to oldest date.
+        // new Date(b.date) - new Date(a.date) results in a positive number if b > a,
+        // which sorts b before a (descending order).
+        fetchedOrders.sort((a, b) => {
+            return new Date(b.date) - new Date(a.date);
+        });
+        
+        setOrders(fetchedOrders);
       } else {
         toast.error("Error fetching orders");
       }
@@ -31,7 +41,8 @@ const Orders = ({ url }) => {
         status: event.target.value
       });
       if (response.data.success) {
-        await fetchAllOrders();
+        // Re-fetch orders to update the list and re-sort
+        await fetchAllOrders(); 
       } else {
         toast.error("Error updating status");
       }

@@ -1,5 +1,6 @@
+// StoreContext.jsx (COMPLETE CODE)
 import axios from 'axios';
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useRef } from 'react';
 
 export const StoreContext = createContext(null);
 
@@ -10,19 +11,14 @@ const StoreContextProvider = (props) => {
   const [food_list, setFoodList] = useState([]);
   const [cartItems, setCartItems] = useState({});
   const [loggedIn, setLoggedIn] = useState(false);
+  
+  // 💡 NEW STATE: Trigger for refreshing orders on pages like MyOrders
+  const [orderUpdateTrigger, setOrderUpdateTrigger] = useState(0); 
 
-  // Update cart in state + localStorage
-  const updateCart = (newCart) => {
-    setCartItems(newCart);
-    localStorage.setItem('cartItems', JSON.stringify(newCart));
-  };
+  const ws = useRef(null);
+  const [wsStatus, setWsStatus] = useState('closed');
 
-  // Clear the cart completely
-  const clearCart = () => {
-    updateCart({});
-  };
-
-  // Fetch food list
+  // Fetch food list (defined here for use in ws.onmessage)
   const fetchFoodList = async () => {
     try {
       const response = await axios.get(`${url}/api/food/list`);
@@ -32,12 +28,11 @@ const StoreContextProvider = (props) => {
     }
   };
 
-  // Check login status via httpOnly cookie
+  // Check login status (defined here for use in loadCartData)
   const checkLoginStatus = async () => {
     try {
       const res = await axios.get(`${url}/api/user/check-auth`, { withCredentials: true });
       setLoggedIn(res.data.loggedIn);
-      
       return res.data.loggedIn;
     } catch (err) {
       console.error('Error checking login status:', err);
@@ -46,7 +41,7 @@ const StoreContextProvider = (props) => {
     }
   };
 
-  // Load cart from server if logged in
+  // Load cart from server (defined here for use in init)
   const loadCartData = async () => {
     const isLoggedIn = await checkLoginStatus();
     if (!isLoggedIn) return;
@@ -58,12 +53,70 @@ const StoreContextProvider = (props) => {
         { withCredentials: true }
       );
       const serverCart = response.data.cartData || {};
-      updateCart(serverCart);
+      setCartItems(serverCart);
     } catch (err) {
       console.error('Error loading server cart:', err);
     }
   };
 
+
+  // 💡 Function to connect to the WebSocket server
+  const connectWebSocket = () => {
+    const wsUrl = url.startsWith('https') 
+      ? `wss://${new URL(url).host}` 
+      : `ws://${new URL(url).host}`;
+
+    ws.current = new WebSocket(wsUrl);
+    
+    ws.current.onopen = () => {
+      console.log('WebSocket Connected!');
+      setWsStatus('open');
+    };
+
+    ws.current.onmessage = (event) => {
+      console.log('WS Message received:', event.data);
+      try {
+        const message = JSON.parse(event.data);
+        
+        // 💡 Handle FOOD_UPDATE: Refresh food list for all users
+        if (message.type === 'FOOD_UPDATE') {
+          console.log(`Real-Time Food Update received: ${message.data.message}`);
+          fetchFoodList(); 
+        }
+
+        // 💡 Handle ORDER_UPDATE: Trigger MyOrders page refresh
+        if (message.type === 'ORDER_UPDATE') {
+          console.log(`Real-Time Order Update: ${message.data.newStatus}`);
+          setOrderUpdateTrigger(prev => prev + 1); // Increment trigger
+        }
+        
+      } catch (e) {
+        console.error('Failed to parse WS message:', e);
+      }
+    };
+
+    ws.current.onclose = () => {
+      console.log('WebSocket Disconnected.');
+      setWsStatus('closed');
+    };
+
+    ws.current.onerror = (error) => {
+      console.error('WebSocket Error:', error);
+      setWsStatus('error');
+    };
+  };
+
+  // Update cart in state + localStorage
+  const updateCart = (newCart) => {
+    setCartItems(newCart);
+    localStorage.setItem('cartItems', JSON.stringify(newCart));
+  };
+
+  // Clear the cart completely
+  const clearCart = () => {
+    updateCart({});
+  };
+  
   // Add item to cart locally and server
   const addToCart = async (itemId) => {
     const newQty = (cartItems[itemId] || 0) + 1;
@@ -122,9 +175,19 @@ const StoreContextProvider = (props) => {
     const init = async () => {
       await fetchFoodList();
       await loadCartData();
+      
+      // 💡 Connect the WebSocket after other initialization
+      connectWebSocket();
     };
     init();
-  }, []);
+
+    // 💡 Cleanup function to close WebSocket when the component unmounts
+    return () => {
+        if (ws.current) {
+            ws.current.close();
+        }
+    };
+  }, []); 
 
   const contextValue = {
     food_list,
@@ -136,8 +199,10 @@ const StoreContextProvider = (props) => {
     getTotalCartAmount,
     url,
     loggedIn,
+    wsStatus,
     checkLoginStatus,
     loadCartData,
+    orderUpdateTrigger, // 💡 EXPOSE THE TRIGGER
   };
 
   return (

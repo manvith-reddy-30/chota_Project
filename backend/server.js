@@ -7,14 +7,16 @@ import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/orderRoute.js";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-
+import { createServer } from 'http'; // Import to create a standard HTTP server
+import { WebSocketServer } from 'ws'; // Import WebSocket library
+import jwt from 'jsonwebtoken';
 dotenv.config();
 
 // App config
 const app = express();
 const port = process.env.PORT || 4000;
 const frontend_url = process.env.FRONTEND_URL;
-
+const JWT_SECRET = process.env.JWT_SECRET;
 // Middlewares
 app.use(express.json());
 app.use(cookieParser());
@@ -45,7 +47,98 @@ app.get("/", (req, res) => {
   res.send("API is working ✅");
 });
 
+const httpServer = createServer(app); 
+
+// Create the WebSocket server, attaching it to the HTTP server
+const wss = new WebSocketServer({ server: httpServer });
+
+// server.js (ADD THIS HELPER FUNCTION)
+function parseCookies(cookieHeader) {
+  const list = {};
+  if (!cookieHeader) return list;
+
+  cookieHeader.split(';').forEach(function(cookie) {
+    let parts = cookie.split('=');
+    // Trim whitespace and decode value
+    list[parts.shift().trim()] = decodeURI(parts.join('='));
+  });
+  return list;
+}
+
+// ----------------------------------------------------
+// 💡 WEBSOCKET HANDLER
+// ----------------------------------------------------
+// server.js (MODIFIED WEBSOCKET HANDLER)
+
+// Map to store active user connections (userId -> ws instance)
+const activeUserConnections = new Map();
+
+wss.on('connection', function connection(ws, req) {
+    let userId = null;
+
+    try {
+        // 1. Get the raw cookie header from the handshake request
+        const cookies = parseCookies(req.headers.cookie);
+        const token = cookies.token; // Look for the 'token' cookie
+
+        if (!token) {
+            console.log('WS Connection blocked: Token missing.');
+            ws.close(1008, 'Authentication required.'); // 1008 is Policy Violation
+            return;
+        }
+
+        // 2. Verify the token using your secret
+        const decoded = jwt.verify(token, JWT_SECRET);
+        userId = decoded.id;
+
+        // 3. Success: Attach the userId to the WebSocket instance
+        ws.userId = userId;
+        activeUserConnections.set(userId, ws); // Store in the map
+        console.log(`WebSocket client connected. User ID: ${userId}`);
+
+    } catch (err) {
+        // Handle JWT verification failure (invalid or expired token)
+        console.error('WS Connection blocked: Invalid token.', err.message);
+        ws.close(1008, 'Invalid authentication token.');
+        return;
+    }
+
+    // ----------------------------------------------------
+    // User-specific handlers now have access to ws.userId
+    // ----------------------------------------------------
+
+    ws.on('message', function incoming(message) {
+        // Example: Only authenticated users can send chat messages
+        console.log(`Received message from User ${ws.userId}: ${message.toString()}`);
+    });
+
+    ws.on('close', () => {
+        console.log(`WebSocket client disconnected. User ID: ${ws.userId || 'N/A'}`);
+        // Remove the connection from the active map
+        if (ws.userId) {
+            activeUserConnections.delete(ws.userId);
+        }
+    });
+});
+
+export const orderUpdateForUser = (userId, message) => {
+    const ws = activeUserConnections.get(userId);
+    if (ws && ws.readyState === 1 /* WebSocket.OPEN */) {
+        ws.send(JSON.stringify({ type: 'ORDER_UPDATE', data: message }));
+    }
+};
+
+export const broadcastFoodUpdate = (message) => {
+    wss.clients.forEach(function each(client) {
+        if (client.readyState === 1 /* WebSocket.OPEN */) { 
+            client.send(JSON.stringify({ type: 'FOOD_UPDATE', data: message }));
+        }
+    });
+};
+
+// ----------------------------------------------------
+
 // Start server
-app.listen(port, () =>
+httpServer.listen(port, () =>
   console.log(`Server started on http://localhost:${port}`)
 );

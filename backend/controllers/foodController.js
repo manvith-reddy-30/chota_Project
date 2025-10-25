@@ -2,6 +2,7 @@
 import foodModel from "../models/FoodModels.js";
 import fs from "fs";
 import path from "path";
+import { broadcastFoodUpdate } from "../server.js";
 
 // Add food item
 const addFood = async (req, res) => {
@@ -21,6 +22,14 @@ const addFood = async (req, res) => {
     });
 
     await food.save();
+    
+    // 💡 2. Trigger WebSocket broadcast after successful save
+    broadcastFoodUpdate({
+        action: 'add',
+        itemId: food._id,
+        message: `${food.name} was added by admin.`
+    });
+
     res
       .status(201)
       .json({ success: true, message: "Food added successfully" });

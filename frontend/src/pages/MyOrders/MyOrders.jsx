@@ -1,3 +1,4 @@
+// MyOrders.jsx (COMPLETE CODE)
 import React, { useContext, useEffect, useState } from 'react';
 import './MyOrders.css';
 import axios from 'axios';
@@ -7,7 +8,9 @@ import { assets } from '../../assets/assets';
 const MyOrders = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { url, currency } = useContext(StoreContext);
+  
+  // 💡 Consume the new trigger
+  const { url, currency, orderUpdateTrigger } = useContext(StoreContext); 
 
   const fetchOrders = async () => {
     try {
@@ -23,9 +26,11 @@ const MyOrders = () => {
     }
   };
 
+  // 💡 CRUCIAL CHANGE: Listen to the trigger for automatic refresh
   useEffect(() => {
     fetchOrders();
-  }, [url]);
+    // Re-fetch whenever url changes (on mount) OR when the trigger increments (on WS message)
+  }, [url, orderUpdateTrigger]); 
 
   if (loading) {
     return (

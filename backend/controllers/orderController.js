@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import jwt from "jsonwebtoken";
 import { generateInvoicePDF } from "../utils/pdf.js";
 import { sendInvoiceMail } from "../utils/email.js";
+import { orderUpdateForUser } from "../server.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -150,10 +151,42 @@ const listOrders = async (req, res) => {
 // Admin: Update order status
 const updateStatus = async (req, res) => {
   const { orderId, status } = req.body;
+
   try {
-    await orderModel.findByIdAndUpdate(orderId, { status });
-    res.status(200).json({ success: true, message: "Status updated successfully" });
+    // 1. Find the order by its _id (orderId) and update the status.
+    // By default, findByIdAndUpdate returns the *original* document.
+    // We store the result in 'updatedOrder' to access its fields.
+    const updatedOrder = await orderModel.findByIdAndUpdate(
+      orderId, 
+      { status: status }
+      // We don't need { new: true } here, as the userId is the same in the original document.
+      // If you needed the *new* status in the returned object, you'd add { new: true }
+    );
+    
+    // Check if the order was found and updated
+    if (!updatedOrder) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    // 2. Extract the userId from the returned document
+    const user_id = updatedOrder.userId;
+
+    // 3. Now you have user_id (e.g., for sending a notification)
+    //console.log(`Order ${orderId} status updated. Associated user ID: ${user_id}`);
+
+    orderUpdateForUser(user_id, {
+      orderId: orderId,
+      newStatus: status
+    });
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Status updated successfully", 
+      userId: user_id // Optionally return the userId
+    });
+
   } catch (error) {
+    // This catches invalid ObjectId format for orderId or other DB errors
     console.error("Update status error:", error);
     res.status(500).json({ success: false, message: "Error updating status" });
   }
