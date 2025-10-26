@@ -22,8 +22,9 @@ const addFood = async (req, res) => {
     });
 
     await food.save();
-    
+    console.log("SUCCESS: Food saved. Preparing WS broadcast.");
     // 💡 2. Trigger WebSocket broadcast after successful save
+    
     broadcastFoodUpdate({
         action: 'add',
         itemId: food._id,

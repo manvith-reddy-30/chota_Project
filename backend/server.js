@@ -129,6 +129,7 @@ export const orderUpdateForUser = (userId, message) => {
 };
 
 export const broadcastFoodUpdate = (message) => {
+  console.log(`Attempting to broadcast Food Update to ${wss.clients.size} clients.`);
     wss.clients.forEach(function each(client) {
         if (client.readyState === 1 /* WebSocket.OPEN */) { 
             client.send(JSON.stringify({ type: 'FOOD_UPDATE', data: message }));
