@@ -20,15 +20,46 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // Middlewares
 app.use(express.json());
 app.use(cookieParser());
-app.use(
-  cors({
-    origin: [frontend_url, "http://localhost:5174", "http://localhost:5173", "https://cuisinecraze.netlify.app"],
-    credentials: true,
-  })
-);
 
-// Allow preflight (CORS) requests
-app.options("*", cors());
+// Define your allowed domains with a pattern for Netlify previews
+const allowedOrigins = [
+  // Local development URLs
+  "http://localhost:5174", 
+  "http://localhost:5173",
+  
+  // Production URL
+  "https://cuisinecraze.netlify.app", 
+  // Add the frontend_url variable if it holds the production URL
+  frontend_url 
+];
+
+// Function to check against allowed origins and the Netlify preview pattern
+app.use(cors({
+    origin: (origin, callback) => {
+        // 1. Allow if the origin is one of the explicitly listed URLs
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        
+        // 2. Allow if the origin matches the Netlify Deploy Preview pattern
+        // This regex matches any subdomain ending with --cuisinecraze.netlify.app
+        if (origin && origin.match(/\.netlify\.app$/)) {
+             return callback(null, true);
+        }
+
+        // 3. Allow requests with no origin (e.g., cURL, some mobile apps)
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        // Block all others
+        return callback(new Error('Not allowed by CORS'), false);
+    },
+    credentials: true,
+}));
+
+// The app.options("*", cors()); line is redundant if you use the above function 
+// because the CORS middleware handles preflight requests by default when configured.
 
 // Database connection
 connectDB();
