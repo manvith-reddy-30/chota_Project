@@ -32,8 +32,15 @@ const StoreContextProvider = (props) => {
   const checkLoginStatus = async () => {
     try {
       const res = await axios.get(`${url}/api/user/check-auth`, { withCredentials: true });
-      setLoggedIn(res.data.loggedIn);
-      return res.data.loggedIn;
+      const isLoggedIn = res.data.loggedIn;
+      setLoggedIn(isLoggedIn);
+      
+      // 💡 NEW: Connect WebSocket ONLY if logged in
+      if (isLoggedIn && ws.current === null) {
+          connectWebSocket();
+      }
+
+      return isLoggedIn;
     } catch (err) {
       console.error('Error checking login status:', err);
       setLoggedIn(false);
@@ -177,7 +184,7 @@ const StoreContextProvider = (props) => {
       await loadCartData();
       
       // 💡 Connect the WebSocket after other initialization
-      connectWebSocket();
+      //connectWebSocket();
     };
     init();
 
