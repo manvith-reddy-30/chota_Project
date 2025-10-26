@@ -167,7 +167,7 @@ const Navbar = (props) => {
         </div>
 
         {!loggedIn ? (
-          <Link to="/login" className="login-button">Sign In</Link>
+          <Link to="/login" className="login-button">Sign In??</Link>
         ) : (
           <div className="navbar-profile">
             <div className="profile-content">
