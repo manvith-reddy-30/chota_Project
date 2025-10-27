@@ -30,8 +30,7 @@ const allowedOrigins = [
   // Production URL
   "https://cuisinecraze.netlify.app", 
   // Add the frontend_url variable if it holds the production URL
-  frontend_url ,
-  "https://68fdc063f29f227dcdda0fa7--cuisinecraze.netlify.app/"
+  frontend_url
 ];
 
 // Function to check against allowed origins and the Netlify preview pattern
