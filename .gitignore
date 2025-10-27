@@ -27,3 +27,6 @@ yarn-error.log*
 
 # OS junk
 Thumbs.db
+
+admin/node_modules
+admin/node_modules/.vite/deps/_metadata.json

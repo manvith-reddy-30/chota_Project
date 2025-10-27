@@ -1,9 +1,7 @@
-// src/pages/Cart/Cart.jsx
-
-import React, { useContext, useEffect } from 'react'
-import './Cart.css'
-import { StoreContext } from '../../context/StoreContext'
-import { useNavigate, useLocation } from 'react-router-dom'
+import React, { useContext, useEffect } from 'react';
+import './Cart.css';
+import { StoreContext } from '../../context/StoreContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Cart = () => {
   const {
@@ -12,42 +10,35 @@ const Cart = () => {
     removeFromCart,
     getTotalCartAmount,
     url,
-    token
-  } = useContext(StoreContext)
+    checkLoginStatus
+  } = useContext(StoreContext);
 
-  const navigate = useNavigate()
-  const location = useLocation()
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // Scroll to top on mount
   useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [])
+    window.scrollTo(0, 0);
+  }, []);
 
-  const handleCheckout = () => {
-    const total = getTotalCartAmount()
+  const handleCheckout = async () => {
+    const total = getTotalCartAmount();
     if (total === 0) {
-      // Cart empty → prompt and send to menu section
-      alert('Your cart is empty. Please add items to proceed!')
-      navigate('/')
-      return
-    }
-    if (!token) {
-      // Not logged in → prompt and send to login
-      alert('Please login to continue!')
-      navigate('/login', { state: { from: location } })
-      return
+      alert('Your cart is empty. Please add items to proceed!');
+      navigate('/');
+      return;
     }
 
-    if (total === 0) {
-      // Cart empty → prompt and send to menu section
-      alert('Your cart is empty. Please add items to proceed!')
-      navigate('/')
-      return
+    // Ensure login status is up to date before checkout
+    const isLoggedIn = await checkLoginStatus();
+    console.log(isLoggedIn);
+    if (!isLoggedIn) {
+      alert('Please login to continue!');
+      navigate('/login', { state: { from: location } });
+      return;
     }
 
-    // Logged in & has items → proceed to checkout
-    navigate('/order')
-  }
+    navigate('/order');
+  };
 
   return (
     <div className="cart">
@@ -63,7 +54,7 @@ const Cart = () => {
         <hr />
 
         {food_list.map((item) => {
-          const qty = cartItems[item._id] || 0
+          const qty = cartItems[item._id] || 0;
           if (qty > 0) {
             return (
               <div key={item._id}>
@@ -82,9 +73,9 @@ const Cart = () => {
                 </div>
                 <hr />
               </div>
-            )
+            );
           }
-          return null
+          return null;
         })}
       </div>
 
@@ -126,7 +117,7 @@ const Cart = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Cart
+export default Cart;

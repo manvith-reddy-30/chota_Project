@@ -1,112 +1,195 @@
-import orderModel from "../models/orderModel.js"
-import userModel from "../models/userModel.js"
-import Stripe from "stripe"
+import orderModel from "../models/orderModel.js";
+import userModel from "../models/userModel.js";
+import invoiceModel from "../models/invoiceModel.js";
+import Stripe from "stripe";
+import jwt from "jsonwebtoken";
+import { generateInvoicePDF } from "../utils/pdf.js";
+import { sendInvoiceMail } from "../utils/email.js";
+import { orderUpdateForUser } from "../server.js";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-const placeOrder = async(req,res) => {
+// Place Order
+const placeOrder = async (req, res) => {
+  const frontend_url = process.env.FRONTEND_URL;
+  try {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ success: false, message: "Unauthorized" });
 
-    const frontend_url = "http://localhost:5173"; // mention the frontend online if deployed online we place the frontend url
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
 
-    try {
-        const newOrder = new orderModel({
-            userId:req.body.userId,
-            items:req.body.items,
-            amount:req.body.amount,
-            address:req.body.address
-        })
+    const user = await userModel.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-        await newOrder.save();
-        await userModel.findByIdAndUpdate(req.body.userId,{cartData:{}})
+    const { items, amount, address } = req.body;
 
-        const line_items = req.body.items.map( (item) => ({
-            price_data:{
-                currency:"inr",
-                product_data:{
-                    name:item.name
-                },
-                unit_amount:item.price*100
-            },
-            quantity:item.quantity
+    const newOrder = new orderModel({
+      userId,
+      items,
+      amount,
+      address,
+      payment: false,
+      status: "pending",
+    });
 
-        }))
+    await newOrder.save();
+    await userModel.findByIdAndUpdate(userId, { cartData: {} });
 
-        line_items.push({
-            price_data:{
-                currency:"inr",
-                product_data:{
-                    name:"Delivery Charges"
-                },
-                unit_amount:2*100
-            },
-            quantity:1
-        })
+    const line_items = items.map((item) => ({
+      price_data: {
+        currency: "inr",
+        product_data: { name: item.name },
+        unit_amount: Math.round(item.price * 100),
+      },
+      quantity: item.quantity,
+    }));
 
-        const session = await stripe.checkout.sessions.create({
-            line_items:line_items,
-            mode:"payment",
-            success_url:`${frontend_url}/verify?success=true&orderId=${newOrder._id}`,
-            cancel_url:`${frontend_url}/verify?success=false&orderId=${newOrder._id}`,
-        })
+    // Add delivery charge
+    line_items.push({
+      price_data: {
+        currency: "inr",
+        product_data: { name: "Delivery Charges" },
+        unit_amount: 200,
+      },
+      quantity: 1,
+    });
 
-        res.json({success:true,session_url:session.url})
+    const session = await stripe.checkout.sessions.create({
+      line_items,
+      mode: "payment",
+      success_url: `${frontend_url}/verify?success=true&orderId=${newOrder._id}`,
+      cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder._id}`,
+    });
 
-    } catch (error) {
-        console.log(error);
-        res.json({success:false,message:"Error"});
+    res.status(201).json({ success: true, session_url: session.url });
+  } catch (error) {
+    console.error("Place order error:", error);
+    res.status(500).json({ success: false, message: "Error placing order" });
+  }
+};
+
+// Verify Order Payment
+const verifyOrder = async (req, res) => {
+  const { orderId, success } = req.body;
+
+  try {
+    if (!orderId) return res.status(400).json({ success: false, message: "Order ID missing" });
+
+    const order = await orderModel.findById(orderId);
+    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+
+    if (success) {
+      order.payment = true;
+      order.status = "paid";
+      await order.save();
+
+      const user = await userModel.findById(order.userId);
+      if (user) {
+        const invoiceData = {
+          customerName: user.name,
+          customerEmail: user.email,
+          items: order.items,
+          totalPrice: order.amount,
+          orderId: order._id.toString(),
+        };
+
+        const pdfBuffer = await generateInvoicePDF(invoiceData);
+        await sendInvoiceMail(user.email, pdfBuffer);
+
+        const invoiceDoc = new invoiceModel({
+          invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
+          orderId: order._id.toString(),
+          userId: user._id.toString(),
+          invoiceData: pdfBuffer,
+          createdAt: new Date(),
+        });
+
+        await invoiceDoc.save();
+        console.log("✅ Invoice saved to DB & email sent to:", user.email);
+      }
+
+      res.status(200).json({ success: true, message: "Payment verified, invoice sent." });
+    } else {
+      await orderModel.findByIdAndDelete(orderId);
+      res.status(200).json({ success: false, message: "Payment failed, order removed." });
     }
-}
+  } catch (error) {
+    console.error("Verify order error:", error);
+    res.status(500).json({ success: false, message: "Error verifying payment" });
+  }
+};
 
-const verifyOrder = async(req,res) =>{
-    const {orderId,success} = req.body;
+// Get orders of logged-in user
+const userOrders = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ success: false, message: "Unauthorized" });
 
-    try {
-        if (success == "true"){
-            await orderModel.findByIdAndUpdate(orderId,{payment:true});
-            res.json({success:true,message:"Paid"});
-        }
-        else{
-            await orderModel.findByIdAndDelete(orderId);
-            res.json({success:true,message:"Not Paid"});
-        }
-    } catch (error) {
-        console.log(error);
-        res.json({success:false,message:"Error"});
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const orders = await orderModel.find({ userId });
+    res.status(200).json({ success: true, data: orders });
+  } catch (error) {
+    console.error("User orders error:", error);
+    res.status(500).json({ success: false, message: "Error fetching orders" });
+  }
+};
+
+// Admin: List all orders
+const listOrders = async (req, res) => {
+  try {
+    const orders = await orderModel.find({});
+    res.status(200).json({ success: true, data: orders });
+  } catch (error) {
+    console.error("List orders error:", error);
+    res.status(500).json({ success: false, message: "Error listing orders" });
+  }
+};
+
+// Admin: Update order status
+const updateStatus = async (req, res) => {
+  const { orderId, status } = req.body;
+
+  try {
+    // 1. Find the order by its _id (orderId) and update the status.
+    // By default, findByIdAndUpdate returns the *original* document.
+    // We store the result in 'updatedOrder' to access its fields.
+    const updatedOrder = await orderModel.findByIdAndUpdate(
+      orderId, 
+      { status: status }
+      // We don't need { new: true } here, as the userId is the same in the original document.
+      // If you needed the *new* status in the returned object, you'd add { new: true }
+    );
+    
+    // Check if the order was found and updated
+    if (!updatedOrder) {
+      return res.status(404).json({ success: false, message: "Order not found" });
     }
-}
-// user orders for frontend
-const userOrders = async(req,res)=>{
-    try{
-      const orders = await orderModel.find({userId:req.body.userId});
-          res.json({success:true,data:orders})
-    }  
-    catch(error){
-          console.log(error);
-          res.json({success:false,message:"Error"})
-    }
-}
 
-// listing orders for admin panel 
-const listOrders = async(req,res)=>{
-       try{
-         const orders = await orderModel.find({});
-         res.json({success:true,data:orders})
-       }
-       catch(error){
-           console.log(error);
-           res.json({success:false,message:"Error"})
-       }
-}
+    // 2. Extract the userId from the returned document
+    const user_id = updatedOrder.userId;
 
-//api for updating order status in admin 
-const updateStatus = async (req,res) =>{
-     try{
-          await orderModel.findByIdAndUpdate(req.body.orderId,{status:req.body.status})
-          res.json({success:true,message:"Status updated"})
-     }
-     catch(error){
-          console.log(error);
-          res.json({success:false,message:"Error"})
-     }
-}
-export { placeOrder ,verifyOrder,userOrders,listOrders,updateStatus}
+    // 3. Now you have user_id (e.g., for sending a notification)
+    //console.log(`Order ${orderId} status updated. Associated user ID: ${user_id}`);
+
+    orderUpdateForUser(user_id, {
+      orderId: orderId,
+      newStatus: status
+    });
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Status updated successfully", 
+      userId: user_id // Optionally return the userId
+    });
+
+  } catch (error) {
+    // This catches invalid ObjectId format for orderId or other DB errors
+    console.error("Update status error:", error);
+    res.status(500).json({ success: false, message: "Error updating status" });
+  }
+};
+
+export { placeOrder, verifyOrder, userOrders, listOrders, updateStatus };

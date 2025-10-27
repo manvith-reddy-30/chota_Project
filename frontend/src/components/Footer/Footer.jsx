@@ -2,6 +2,7 @@ import React from 'react';
 import './Footer.css';
 import { assets } from '../../assets/assets';
 
+
 const Footer = () => {
   return (
     <footer className="footer" id="footer">
@@ -9,8 +10,8 @@ const Footer = () => {
         <div className="footer-content">
           {/* Left: brand + socials */}
           <div className="footer-section footer-section--brand">
-            <img src={assets.logo} alt="Tomato Logo" className="footer-logo" />
-            <p>Lorem ipsum</p>
+            <img src={assets.cusinecraze} alt="Tomato Logo" className="footer-logo" />
+            <p>Have a good meal</p>
             <div className="footer-social-icons">
               <img src={assets.facebook_icon} alt="Facebook" />
               <img src={assets.linkedin_icon} alt="LinkedIn" />
@@ -33,8 +34,8 @@ const Footer = () => {
           <div className="footer-section footer-section--contact">
             <h2>Get In Touch</h2>
             <ul>
-              <li>+1-232-343-5365</li>
-              <li>contact@tomato.com</li>
+              <li>+91 6302258615</li>
+              <li>contact.cuisine.craze@gmail.com</li>
             </ul>
           </div>
         </div>

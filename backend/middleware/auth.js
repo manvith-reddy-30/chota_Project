@@ -1,19 +1,38 @@
 import jwt from "jsonwebtoken";
 
-const authMiddleWare = async(req,res,next) =>{
-    const {token} = req.headers;
+// ✅ Middleware to protect routes by validating JWT
+const authMiddleware = (req, res, next) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res
+      .status(401)
+      .json({ success: false, message: "Unauthorized: Token missing" });
+  }
 
-    if (!token){
-        return res.json({success:false,message:"Not authorized! Login again"})
-    }
-    try {
-        const token_decode = jwt.verify(token,process.env.JWT_SECRET);
-        req.body.userId = token_decode.id;
-        next();
-    } catch (error) {
-        console.log(error);
-        res.json({success:false,message:"Error"})
-    }
-}
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.id;
+    next();
+  } catch (err) {
+    console.error("JWT verification failed:", err);
+    return res.status(401).json({ success: false, message: "Invalid or expired token" });
+  }
+};
 
-export default authMiddleWare;
+// ✅ Public route to check login status (e.g., for frontend auth check)
+const checkauth = (req, res) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(200).json({ loggedIn: false });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    res.status(200).json({ loggedIn: true, userId: decoded.id });
+  } catch (err) {
+    console.error("Auth check failed:", err);
+    res.status(200).json({ loggedIn: false });
+  }
+};
+
+export { authMiddleware, checkauth };

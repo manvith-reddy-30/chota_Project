@@ -9,91 +9,89 @@ const Navbar = (props) => {
   const [menu, setMenu] = useState("home");
   const {
     getTotalCartAmount,
-    token,
-    setToken,
+    checkLoginStatus,
+    loggedIn,
     url,
-    clearCart      // <— imported clearCart
+    clearCart      
   } = useContext(StoreContext);
   const [userName, setUserName] = useState("");
   const navigate = useNavigate();
-    const [showSearch, setShowSearch] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
-  const searchTerm = props.searchTerm;
-  const setSearchTerm = props.setSearchTerm;
+  const { searchTerm, setSearchTerm } = props;
+
   const scroll = () => {
     const homeid = document.getElementById("home");
     if (homeid) {
-      homeid.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-        inline: "nearest",
-      });
+      homeid.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
-  const scrollToMenu = () => {
-    navigate("/#explore-menu");
+  useEffect(() => {
+    checkLoginStatus();
+  }, [checkLoginStatus]);
+
+  const scrollToFoodDisplay = () => {
+    const foodDisplay = document.getElementById("food-display");
+    if (foodDisplay) {
+      foodDisplay.scrollIntoView({ behavior: "smooth", block: "start" });
+      setTimeout(() => {
+        window.scrollBy({
+          top: 100, // adjust as needed for "somewhat more"
+          behavior: "smooth",
+        });
+      }, 500);
+    }
   };
 
-  const logout = () => {
-    // 1) Remove auth token
-    localStorage.removeItem("token");
-    setToken("");
-
-    // 2) Clear cart via context helper
-    clearCart();
-
-    // 3) Redirect to home
-    navigate("/");
+  const logout = async () => {
+    try {
+      await axios.get(`${url}/api/user/logout`, { withCredentials: true });
+      clearCart();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   useEffect(() => {
     const fetchUserName = async () => {
       try {
         const response = await axios.get(`${url}/api/user/name`, {
-          headers: { token },
+          withCredentials: true,
         });
         setUserName(response.data.userName);
       } catch (error) {
         console.error("Error fetching user name:", error);
       }
     };
-
-    if (token) fetchUserName();
-  }, [token, url]);
+    if (loggedIn) fetchUserName();
+  }, [loggedIn, url]);
 
   return (
     <div className="navbar">
-      
       <div className="logo">
-        <Link to="/">
-        <img src={assets.cusinecraze} alt="Logo" className="logopng" />
-      </Link>
-      <h1 className="logoname">CUISINECRAZE</h1>
-
+        <Link to="/" className="logo-link" onClick={() => { setMenu("Home"); scroll(); }}>
+          <img src={assets.cusinecraze} alt="Logo" className="logopng" />
+          <h1 className="logoname">CUISINECRAZE</h1>
+        </Link>
       </div>
+
       <ul className="navbar-menu">
         <Link
           to="/"
-          onClick={() => {
-            setMenu("Home");
-            scroll();
-          }}
+          onClick={() => { setMenu("Home"); scroll(); }}
           className={menu === "Home" ? "active" : ""}
         >
           Home
         </Link>
         <a
           href="#explore-menu"
-          onClick={() => {
-            setMenu("Menu");
-            scrollToMenu();
-          }}
+          onClick={() => setMenu("Menu")}
           className={menu === "Menu" ? "active" : ""}
         >
           Menu
         </a>
-        
         <a
           href="#footer"
           onClick={() => setMenu("Contact-Us")}
@@ -104,26 +102,62 @@ const Navbar = (props) => {
       </ul>
       
       <div className={`navbar-right ${showSearch ? 'search-active' : ''}`}>
-      <div className="navbar-search">
-    {!showSearch ? (
-      <img
-        src={assets.search_icon}
-        alt="Search"
-        className="clickable-icon"
-        onClick={() => setShowSearch(true)}
-      />
-    ) : (
-      <input
-        type="text"
-        placeholder="Search menu..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="search-input"
-        autoFocus
-        onBlur={() => setShowSearch(false)} // Optional
-      />
-    )}
-  </div>
+        <div className="navbar-search">
+          {!showSearch ? (
+            <img
+              src={assets.search_icon}
+              alt="Search"
+              className="clickable-icon"
+              onClick={() => setShowSearch(true)}
+            />
+          ) : (
+            <div className="navbar-search">
+              <div className="search-container">
+                <input
+                  type="text"
+                  placeholder="Search menu..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input stylish-search-input"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const foodDisplay = document.getElementById("explore-menu");
+                      if (foodDisplay) {
+                        foodDisplay.scrollIntoView({ behavior: "smooth", block: "start" });
+                        setTimeout(() => {
+                          window.scrollBy({ top: 150, behavior: "smooth" });
+                        }, 500);
+                      }
+                    }
+                  }}
+                />
+                {searchTerm ? (
+                  <img
+                    src={assets.cross_icon} // replace with your clear icon path
+                    alt="Clear"
+                    className="search-action-icon"
+                    onClick={() => setSearchTerm("")}
+                  />
+                ) : (
+                  <img
+                    src={assets.search_icon}
+                    alt="Search"
+                    className="search-action-icon"
+                    onClick={() => {
+                      const foodDisplay = document.getElementById("food-display");
+                      if (foodDisplay) {
+                        foodDisplay.scrollIntoView({ behavior: "smooth", block: "start" });
+                        setTimeout(() => {
+                          window.scrollBy({ top: 200, behavior: "smooth" });
+                        }, 500);
+                      }
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="navbar-cart-icon">
           <Link to="/cart">
@@ -132,29 +166,16 @@ const Navbar = (props) => {
           {getTotalCartAmount() > 0 && <div className="dot" />}
         </div>
 
-        {!token ? (
-          <Link to="/login" className="login-button">
-            Sign In
-          </Link>
+        {!loggedIn ? (
+          <Link to="/login" className="login-button">Sign In</Link>
         ) : (
           <div className="navbar-profile">
             <div className="profile-content">
-              <img
-                className="imgp"
-                src={assets.profile_icon}
-                alt="Profile Icon"
-              />
+              <img className="imgp" src={assets.profile_icon} alt="Profile Icon" />
               <ul className="navbar-profile-dropdown">
                 <li onClick={() => navigate("/profile")}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    fill="currentColor"
-                    className="bi bi-person-fill"
-                    viewBox="0 0 16 16"
-                    style={{ color: "orange" }}
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    className="bi bi-person-fill" viewBox="0 0 16 16" style={{ color: "orange" }}>
                     <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
                   </svg>
                   <p>Profile</p>

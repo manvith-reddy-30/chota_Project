@@ -9,20 +9,21 @@ import axios from 'axios';
 import Navbar from '../../components/Navbar/Navbar';
 
 const Home = () => {
-  const [category, setCategory] = useState("All");
+  const [category, setCategory] = useState('All');
   const { url } = useContext(StoreContext);
-  const [loading, setLoading] = useState(true);
-  const [foodData, setFoodData] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [backendError, setBackendError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        await axios.get(url); 
-        setLoading(false);
+        await axios.get(url);
+        setIsLoading(false);
       } catch (error) {
-        console.error("Backend not responding:", error);
-        setLoading(false);
+        console.error('Backend not responding:', error);
+        setBackendError('Our servers are currently down. Please try again later.');
+        setIsLoading(false);
       }
     };
 
@@ -32,19 +33,18 @@ const Home = () => {
   return (
     <>
       <Header />
-      <Navbar searchTerm = {searchTerm} setSearchTerm = {setSearchTerm}/>
+      <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       <ExploreMenu category={category} setCategory={setCategory} />
-      
-      {loading ? (
-        <div className="loader">
-          Loading...
-        </div>
+
+      {isLoading ? (
+        <div className="loader">Loading...</div>
+      ) : backendError ? (
+        <div className="error">{backendError}</div>
       ) : (
-        <FoodDisplay category={category} searchTerm = {searchTerm}
-        />
+        <FoodDisplay category={category} searchTerm={searchTerm} />
       )}
 
-     <AppDownload/>
+      <AppDownload />
     </>
   );
 };

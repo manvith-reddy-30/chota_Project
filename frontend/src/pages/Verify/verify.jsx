@@ -1,51 +1,45 @@
-// src/pages/Verify/verify.jsx
-import React, { useContext, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import axios from 'axios'
-import { StoreContext } from '../../context/StoreContext'
-import './verify.css'
+import React, { useContext, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import axios from 'axios';
+import { StoreContext } from '../../context/StoreContext';
+import './verify.css';
 
 const Verify = () => {
-  const { url } = useContext(StoreContext)
-  const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
+  const { url } = useContext(StoreContext);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const verifyPayment = async () => {
-      // 1) Parse success as a boolean
-      const successParam = searchParams.get('success') === 'true'
-      const orderId = searchParams.get('orderId')
+    (async () => {
+      const successParam = searchParams.get('success') === 'true';
+      const orderId = searchParams.get('orderId');
 
       try {
-        // 2) Call backend
         const response = await axios.post(
           `${url}/api/order/verify`,
-          { success: successParam, orderId }
-        )
+          { success: successParam, orderId },
+          { withCredentials: true } // Ensures cookies are sent
+        );
 
-        // 3) Navigate based on backend result
         if (response.data.success) {
-          navigate('/myorders', { replace: true })
+          navigate('/myorders', { replace: true });
         } else {
-          console.error('Payment verification failed:', response.data)
-          navigate('/', { replace: true })
+          console.error('Payment verification failed:', response.data);
+          navigate('/', { replace: true });
         }
       } catch (err) {
-        console.error('Error verifying payment:', err)
-        navigate('/', { replace: true })
+        console.error('Error verifying payment:', err);
+        navigate('/', { replace: true });
       }
-    }
-
-    verifyPayment()
-  // we only want to run this once on mount
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    })();
+  }, [navigate, searchParams, url]);
 
   return (
     <div className="verify">
       <div className="spinner"></div>
+      <p>Verifying your payment, please wait...</p>
     </div>
-  )
-}
+  );
+};
 
-export default Verify
+export default Verify;
