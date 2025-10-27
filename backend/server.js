@@ -15,7 +15,14 @@ const port = process.env.PORT || 4000;
 
 // middlewares
 app.use(express.json())
-app.use(cors())
+app.use(cors({
+  origin: [
+    "https://cuisinecraze.netlify.app", // ✅ your frontend
+    "http://localhost:5173"             // ✅ for local dev (optional)
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}));
 
 //DB connection 
 connectDB();

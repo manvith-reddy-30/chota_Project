@@ -102,7 +102,7 @@ const Navbar = (props) => {
           Contact-Us
         </a>
       </ul>
-
+      
       <div className={`navbar-right ${showSearch ? 'search-active' : ''}`}>
       <div className="navbar-search">
     {!showSearch ? (

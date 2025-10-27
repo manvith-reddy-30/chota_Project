@@ -4,8 +4,23 @@
     align-items: center;
     padding: 8px 4%;
 }
-.navbar .logo{
-    width: max(10%,80px);
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 1;
+}
+
+.logopng {
+  height: 35px;
+  width: auto;
+}
+
+.logoname {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ff7a00;
+  white-space: nowrap;
 }
 .navbar .profile{
     width: 40px;
