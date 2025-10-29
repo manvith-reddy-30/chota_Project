@@ -108,7 +108,7 @@ const Navbar = (props) => {
           Contact-Us
         </a>
       </ul>
-
+      
       <div className={`navbar-right ${showSearch ? 'search-active' : ''}`}>
         <div className="navbar-search">
           {!showSearch ? (
@@ -172,7 +172,7 @@ const Navbar = (props) => {
         </div>
 
         {!loggedIn ? (
-          <Link to="/login" className="login-button">Sign In??</Link>
+          <Link to="/login" className="login-button">Sign In</Link>
         ) : (
           <div className="navbar-profile">
             <div className="profile-content">

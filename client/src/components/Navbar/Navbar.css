@@ -88,7 +88,7 @@ body {
   display: inline-block;
   background: transparent;
   font-size: 16px;
-  color: #49557e;
+  color: solid;
   border: 1px solid #ff4c24;
   padding: 10px 30px;
   border-radius: 50px;
@@ -143,7 +143,7 @@ body {
 }
 
 .name-of-person {
-  color: #49557e;
+  color: solid;
   text-align: center;
   font-size: 14px;
   margin-top: 5px;
